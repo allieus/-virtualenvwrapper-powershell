@@ -1,0 +1,4 @@
+11.8.7
+	* VirtualEnvWrapper clone in PowerShell
+	* UserScripts
+	* Tab expasion for VirtualEnvWrapper
