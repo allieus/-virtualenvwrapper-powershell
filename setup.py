@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-PROJECT = 'virtualenvwrapper'
+PROJECT = 'virtualenvwrapper-powershell'
 
 # YY.M.D[a-z]
-VERSION = '11.7.23'
+VERSION = '11.8.7'
 
 # Bootstrap installation of Distribute
 import distribute_setup
@@ -99,15 +99,15 @@ else:
 # Assume ~\Documents\WindowsPowerShell\Modules is in $PSModulePath, which
 # should be true in a default installation of PowerShell 2.0.
 ps_modules = os.path.join(path.value, 'WindowsPowerShell', 'Modules')
-data_target = os.path.join(ps_modules, 'virtualenvwrapper')
+data_target = os.path.join(ps_modules, 'VirtualEnvWrapper')
 
 data_files = [
-    (data_target, ['virtualenvwrapperwin/virtualenvwrapper/virtualenvwrapper.psm1']),
-    (data_target, ['virtualenvwrapperwin/virtualenvwrapper/virtualenvwrapper.psd1']),
-    (data_target, ['virtualenvwrapperwin/virtualenvwrapper/win.psm1']),
-    (data_target, ['virtualenvwrapperwin/virtualenvwrapper/support.psm1']),
-    (data_target, ['virtualenvwrapperwin/virtualenvwrapper/VirtualenvWrapperTabExpansion.psm1']),
-    (os.path.join(data_target, 'en-US'), ['virtualenvwrapperwin/virtualenvwrapper/en-US/about_virtualenvwrapperForWindows.help.txt']),
+    (data_target, ['virtualenvwrapper/VirtualEnvWrapper.psm1']),
+    (data_target, ['virtualenvwrapper/VirtualEnvWrapper.psd1']),
+    (data_target, ['virtualenvwrapper/Win.psm1']),
+    (data_target, ['virtualenvwrapper/Support.psm1']),
+    (data_target, ['virtualenvwrapper/VirtualenvWrapperTabExpansion.psm1']),
+    (os.path.join(data_target, 'en-US'), ['virtualenvwrapper/en-US/about_virtualenvwrapper_powershell.help.txt']),
 ]
 # =============================================================================
 
@@ -202,16 +202,16 @@ def find_package_data(
     
 
 setup(
-    name = 'virtualenvwrapper-powershell',
+    name = PROJECT,
     version = VERSION,
     
-    description = 'Enhancements to virtualenv (for Windows). Patches original virtualenvwrapper as needed.',
+    description = "Enhancements to virtualenv (for Windows). A clone of Doug Hellmann's virtualenvwrapper",
     long_description = long_description,
     
     author = 'Guillermo López',
     author_email = 'guilan70@hotmail.com',
 
-    url = 'https://bitbucket.org/guillermooo/%s-powershell/overview' % PROJECT,
+    url = 'https://bitbucket.org/guillermooo/%s/overview' % PROJECT,
 
     classifiers = [ 'Development Status :: 4 - Beta',
                     'License :: OSI Approved :: BSD License',
@@ -225,18 +225,18 @@ setup(
 
     scripts = [],
 
-    install_requires=['virtualenv', 'virtualenvwrapper>=2.6'],
+    # install_requires=['virtualenv', 'virtualenvwrapper>=2.6'],
 
-    namespace_packages = [ 'virtualenvwrapper' ],
-    packages = find_packages(),
+    # namespace_packages = [ 'virtualenvwrapper' ],
+    # packages = find_packages(),
     include_package_data = True,
     # Scan the input for package information
     # to grab any data files (text, images, etc.) 
     # associated with sub-packages.
-    package_data = find_package_data(PROJECT, 
-                                     package=PROJECT,
-                                     only_in_packages=False,
-                                     ),
+    # package_data = find_package_data(PROJECT, 
+    #                                  package=PROJECT,
+    #                                  only_in_packages=False,
+    #                                  ),
     zip_safe=False,
     data_files=data_files
     )
