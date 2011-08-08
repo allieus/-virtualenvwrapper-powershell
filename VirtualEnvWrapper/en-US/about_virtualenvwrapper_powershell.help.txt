@@ -14,11 +14,11 @@ LONG DESCRIPTION
 	in VWW.
 	
 	VWW implements virtualenvwrapper in a way that fits PowerShell. Thus, 
-	there is a New-VirtualEnv as well as a Remove-VirtualEnv cmdlet. In order
-	to make long-time users of virtualenvwrapper at home, however, aliases and
-	functions matching the original interface are provided too. Notably, workon
-	will wrap Set-VirtualEnv to make its behavior very similar to the original
-	workon function.
+	there is a New-VirtualEnvironment as well as a Remove-VirtualEnvironment
+	cmdlet. In order to make long-time users of virtualenvwrapper at home,
+	however, aliases and functions matching the original interface are provided
+	too. Notably, workon will wrap Set-VirtualEnv to make its behavior very
+	similar to the original workon function.
 
 CONFIGURATION
 
@@ -42,7 +42,7 @@ HOW TO USE
 	Once $env:WORKON_HOME has been created you can create a new virtual
 	environment with:
 
-	New-VirtualEnv -Name <name>
+	New-VirtualEnvironment -Name <name>
 
 	... or...
 
@@ -50,7 +50,7 @@ HOW TO USE
 
 	To see more available cmdlets, search them like this:
 
-	Get-Command -Name VirtualEnv
+	Get-Command -Name VirtualEnvironment
 	    
 SEE ALSO
 
