@@ -4,13 +4,13 @@
 PROJECT = 'virtualenvwrapper-powershell'
 
 # YY.M.D[a-z]
-VERSION = '11.8.7'
+VERSION = '11.8.8'
 
 # Bootstrap installation of Distribute
 import distribute_setup
 distribute_setup.use_setuptools()
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 from distutils.util import convert_path
 from fnmatch import fnmatchcase
