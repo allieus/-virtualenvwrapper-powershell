@@ -8,6 +8,7 @@
 $module = $MyInvocation.MyCommand.ScriptBlock.Module 
 $module.OnRemove = {
     Unregister-Event -SourceIdentifier 'VirtualEnvWrapper.*'
+    Remove-Job -SourceIdentifier 'VirtualenvWrapper.*' -Force
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
