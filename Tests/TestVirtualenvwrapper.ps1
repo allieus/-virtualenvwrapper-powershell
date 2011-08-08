@@ -15,14 +15,14 @@ $SetUp = {
     remove-job -name 'VirtualEnvWrapper.*' -force
 }
 
-${TestCase_ - MakeVirtualEnvironment} = {
+${TestCase_ - New-VirtualEnvironment} = {
 
     ${test_ - Fail if environmental problem} = {
         $oldWORKON_HOME = $env:WORKON_HOME
         $env:WORKON_HOME = "./IDONTEXIST"
 
         try {
-            MakeVirtualEnvironment "NEW"
+            New-VirtualEnvironment "NEW"
         }
         catch {
             $true
@@ -32,12 +32,12 @@ ${TestCase_ - MakeVirtualEnvironment} = {
     }
 
     ${test_ - Get Help OK} = {
-        $a = MakeVirtualEnvironment
+        $a = New-VirtualEnvironment
         $a[0] -eq "You must provide a DEST_DIR"
     }
 
     ${test_ - Creates virtual env correctly} = {
-        MakeVirtualEnvironment "NEW" > $null
+        New-VirtualEnvironment "NEW" > $null
         
         test-path "$env:WORKON_HOME\NEW"
         test-path "$env:WORKON_HOME\NEW\Scripts"
@@ -51,18 +51,18 @@ ${TestCase_ - MakeVirtualEnvironment} = {
 
 ${TestCase_ - ActivateVirtualEnvironment} = {
     ${test_ - Is env var VIRTUAL_ENV set correctly} = {
-        SetVirtualEnvironment 'NEW'
+        Set-VirtualEnvironment 'NEW'
         (join-path $env:WORKON_HOME 'NEW') -eq (resolve-path $env:VIRTUAL_ENV).providerpath
     }
 
     makeTestCase
 }
 
-${TestCase_ - RemoveVirtualEnvironment} = {
+${TestCase_ - Remove-VirtualEnvironment} = {
     
     ${test_ - Fail if no args} = {
         try {
-            RemoveVirtualEnvironment
+            Remove-VirtualEnvironment
         }
         catch {
             $_.Exception.Message -eq "You must specify a virtual environment name."
@@ -74,7 +74,7 @@ ${TestCase_ - RemoveVirtualEnvironment} = {
         $env:WORKON_HOME = ""
 
         try {
-            RemoveVirtualEnvironment "NONE"
+            Remove-VirtualEnvironment "NONE"
         }
         catch [System.IO.IOException] {
             $true
@@ -85,10 +85,10 @@ ${TestCase_ - RemoveVirtualEnvironment} = {
 
     ${test_ - Fail if attempt to remove current env} = {
 
-        SetVirtualEnvironment "NEW"
+        Set-VirtualEnvironment "NEW"
 
         try {
-            RemoveVirtualEnvironment "NEW"
+            Remove-VirtualEnvironment "NEW"
         }
         catch {
             $_.Exception.Message.StartsWith("ERROR: You cannot remove the active environment")
@@ -100,7 +100,7 @@ ${TestCase_ - RemoveVirtualEnvironment} = {
     }
 
     ${test_ - Remove a virtual env} = {
-        RemoveVirtualEnvironment "NEW"
+        Remove-VirtualEnvironment "NEW"
         -not (test-path "$env:WORKON_HOME\NEW")
     }
 

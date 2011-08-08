@@ -51,7 +51,7 @@ $VirtualEnvWrapperTabExpansion = {
     param($line, $lastWord)
 
     switch -regex ($line) {
-        "^(.*[\s;])?(workon|rmvirtualenv)\s+[^\s]*$" {
+        "^(.*[\s;])?(workon|rmvirtualenv|(remove|set)-virtualenvironment)\s+[^\s]*$" {
             GetVirtualEnvCompletions -Line $line -LastWord $lastWord
             break
         }

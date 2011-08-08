@@ -8,7 +8,7 @@
 $module = $MyInvocation.MyCommand.ScriptBlock.Module 
 $module.OnRemove = {
     Unregister-Event -SourceIdentifier 'VirtualEnvWrapper.*'
-    Remove-Job -SourceIdentifier 'VirtualenvWrapper.*' -Force
+    Remove-Job -Name 'VirtualenvWrapper.*' -Force
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -52,7 +52,7 @@ if (-not $VIRTUALENVWRAPPER_LOG_DIR)
 # Usage: mkvirtualenv [options] ENVNAME
 # (where the options are passed directly to virtualenv)
 #
-function MakeVirtualEnvironment
+function New-VirtualEnvironment
 {
     param($Name)
     
@@ -89,7 +89,7 @@ function MakeVirtualEnvironment
 }
 
 
-function RemoveVirtualEnvironment
+function Remove-VirtualEnvironment
 {
     if (!$args)
     {
@@ -155,7 +155,7 @@ function ShowWorkonHomeOptions
 #
 # Usage: workon [environment_name]
 #
-function SetVirtualEnvironment
+function Set-VirtualEnvironment
 {
     $env_name = "$args"
 
@@ -303,7 +303,7 @@ function GetSitePackages
 
 
 # Duplicate the named virtualenv to make a new one.
-function CopyVirtualEnvironment
+function Copy-VirtualEnvironment
 {
     param([string]$From, [string]$To)
 
@@ -321,22 +321,22 @@ function CopyVirtualEnvironment
 # =============================================================================
 new-alias -name "cdsitepackages"    -value "CDIntoSitePackages"     
 new-alias -name "cdvirtualenv"      -value "CDIntoVirtualEnvironment"
-new-alias -name "cpvirtualenv"      -value "CopyVirtualEnvironment" 
+new-alias -name "cpvirtualenv"      -value "Copy-VirtualEnvironment" 
 new-alias -name "lssitepackages"    -value "GetSitePackages"        
 # new-alias -name "lsvirtualenv"      -value "GetVirtualEnvironments" 
-new-alias -name "mkvirtualenv"      -value "MakeVirtualEnvironment" 
-new-alias -name "rmvirtualenv"      -value "RemoveVirtualEnvironment"
-new-alias -name "workon"            -value "SetVirtualEnvironment"  
+new-alias -name "mkvirtualenv"      -value "New-VirtualEnvironment" 
+new-alias -name "rmvirtualenv"      -value "Remove-VirtualEnvironment"
+new-alias -name "workon"            -value "Set-VirtualEnvironment"  
 # =============================================================================
 
 export-modulemember -function "CDIntoSitePackages"
 export-modulemember -function "CDIntoVirtualEnvironment"
-export-modulemember -function "CopyVirtualEnvironment"
+export-modulemember -function "Copy-VirtualEnvironment"
 export-modulemember -function "GetSitePackages"
 # export-modulemember -function "GetVirtualEnvironments"
-export-modulemember -function "MakeVirtualEnvironment"
-export-modulemember -function "RemoveVirtualEnvironment"
-export-modulemember -function "SetVirtualEnvironment"
+export-modulemember -function "New-VirtualEnvironment"
+export-modulemember -function "Remove-VirtualEnvironment"
+export-modulemember -function "Set-VirtualEnvironment"
 
 # Conditionally export additional stuff so that we can test it.
 if ($args -and $args[0] -eq "TESTING")
