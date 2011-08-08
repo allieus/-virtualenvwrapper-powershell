@@ -8,3 +8,4 @@ if (-not $?) { write-host -fore red "Error."; break }
 
 write-host "virtualenvwrapper: Installation complete." -fore darkgreen
 write-host "Import module to start using it: Import-Module VirtualEnvWrapper"
+
