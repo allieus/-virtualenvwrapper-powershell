@@ -107,14 +107,14 @@ ${TestCase_ - Remove-VirtualEnvironment} = {
     makeTestCase
 }
 
-${TestCase_ - ShowWorkonHomeOptions } = {
+${TestCase_ - Get-VirtualEnvironment } = {
     
     ${test_ - Show available environments} = {
         new-item -itemtype f "$env:WORKON_HOME/a/Scripts/activate.ps1" -force > $null
         new-item -itemtype f "$env:WORKON_HOME/b/Scripts/activate.ps1" -force > $null
         new-item -itemtype f "$env:WORKON_HOME/c/Scripts/activate.ps1" -force > $null
 
-        $res = ShowWorkonHomeOptions
+        $res = Get-VirtualEnvironment
 
         # Make sure we find the envs
         "$($res | foreach-object { $_.name } | sort-object)" -eq "a b c"

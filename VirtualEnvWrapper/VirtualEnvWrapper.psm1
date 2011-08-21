@@ -137,7 +137,8 @@ function Remove-VirtualEnvironment
 }
 
 
-function ShowWorkonHomeOptions
+# XXX Todo: -Filter, etc.
+function Get-VirtualEnvironment
 {
     try {
         VerifyWorkonHome
@@ -148,12 +149,6 @@ function ShowWorkonHomeOptions
     # get-childitem "$env:workon_home/*/scripts/activate.ps1" | `
     #             foreach-object { split-path "$((split-path $_ -parent))/.." -leaf }
     GetVirtualEnvData
-}
-
-# XXX Todo: -Filter, etc.
-function Get-VirtualEnvironment
-{
-    ShowWorkonHomeOptions
 }
 
 # List or change working virtual environments
@@ -207,32 +202,6 @@ function Set-VirtualEnvironment
         }
     }
 }
-
-
-# function GetVirtualEnvironments
-# {
-#     param([switch]$Brief, [switch]$Long)
-
-#     if ($Long)
-#     {
-#         foreach ($x in (ShowWorkonHomeOptions))
-#         {
-#             show_virtualenv -$EnvName $_
-#         }
-#     }
-#     else
-#     {
-#         ShowWorkonHomeOptions
-#     }
-# }
-
-
-# function show_virtualenv
-# {
-#     param($EnvName)
-#     write-host $EnvName
-#     RunHook "get_env_details" $EnvName
-# }
 
 
 # Prints the Python version string for the current interpreter.
@@ -359,8 +328,6 @@ export-modulemember -function "workon"
 # Conditionally export additional stuff so that we can test it.
 if ($args -and $args[0] -eq "TESTING")
 {
-    # export-modulemember "show_virtualenv"
-    export-modulemember "ShowWorkonHomeOptions"
     export-modulemember "virtualenvwrapper_get_python_version"
     export-modulemember "virtualenvwrapper_get_site_packages_dir"
 }
