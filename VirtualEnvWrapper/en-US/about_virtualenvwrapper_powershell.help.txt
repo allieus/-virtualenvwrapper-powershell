@@ -24,13 +24,14 @@ CONFIGURATION
 
 	$env:WORKON_HOME
 
-	This variable contains the path to the directory where all virtual
-	environments will be stored. By default, it points to $env:WORKON_HOME/.virtualenvs.
+		This variable contains the path to the directory where all virtual
+		environments will be stored. By default, it points to
+		$env:WORKON_HOME/.virtualenvs.
 
 	$VirtualEnvWrapperExtensions
 
-	This is the path to the extensions store. $env:WORKON_HOME/Extensions as
-	well as this path, if present, will be searched for VWW extensions.
+		This is the path to the extensions store. $env:WORKON_HOME/Extensions
+		as well as this path, if present, will be searched for VWW extensions.
 
 	Making $env:WORKON_HOME a PSDrive
 
@@ -50,7 +51,7 @@ HOW TO USE
 
 	To see more available cmdlets, search them like this:
 
-	Get-Command -Name VirtualEnvironment
+	Get-Command -Noun VirtualEnvironment
 	    
 SEE ALSO
 
