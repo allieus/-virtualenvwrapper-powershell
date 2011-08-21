@@ -150,6 +150,11 @@ function ShowWorkonHomeOptions
     GetVirtualEnvData
 }
 
+# XXX Todo: -Filter, etc.
+function Get-VirtualEnvironment
+{
+    ShowWorkonHomeOptions
+}
 
 # List or change working virtual environments
 #
@@ -171,8 +176,7 @@ function Set-VirtualEnvironment
 
         ( [bool]!$env_name ) {
 
-            ShowWorkonHomeOptions
-            break
+            throw("You must specify a virtual environment name.")
         }
         default {
 
@@ -314,6 +318,19 @@ function Copy-VirtualEnvironment
 }
 
 
+function workon
+{
+    if ("$args")
+    {
+        Set-VirtualEnvironment "$args"
+    } 
+    else
+    {
+        Get-VirtualEnvironment
+    }
+}
+
+
 # XXX: THIS IS WRONG, but I can't make it work otherwise.
 # Also, Import-Module -prefix PREFIX_ breaks aliases! What's the point, then?
 # =============================================================================
@@ -326,7 +343,6 @@ new-alias -name "lssitepackages"    -value "GetSitePackages"
 # new-alias -name "lsvirtualenv"      -value "GetVirtualEnvironments" 
 new-alias -name "mkvirtualenv"      -value "New-VirtualEnvironment" 
 new-alias -name "rmvirtualenv"      -value "Remove-VirtualEnvironment"
-new-alias -name "workon"            -value "Set-VirtualEnvironment"  
 # =============================================================================
 
 export-modulemember -function "CDIntoSitePackages"
@@ -337,6 +353,8 @@ export-modulemember -function "GetSitePackages"
 export-modulemember -function "New-VirtualEnvironment"
 export-modulemember -function "Remove-VirtualEnvironment"
 export-modulemember -function "Set-VirtualEnvironment"
+export-modulemember -function "Get-VirtualEnvironment"
+export-modulemember -function "workon"
 
 # Conditionally export additional stuff so that we can test it.
 if ($args -and $args[0] -eq "TESTING")
@@ -354,7 +372,6 @@ export-modulemember -alias "lssitepackages"
 # export-modulemember -alias "lsvirtualenv"
 export-modulemember -alias "mkvirtualenv"
 export-modulemember -alias "rmvirtualenv"
-export-modulemember -alias "workon"
 
 
 #
