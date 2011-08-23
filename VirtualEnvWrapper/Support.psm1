@@ -24,41 +24,6 @@ function VerifyWorkonHome
 }
 
 
-# XXX: Test this.
-# function RunHook
-# {
-#     $tmpfile = [io.path]::GetTempFileName() + ".ps1"
-#     new-item -item f $tmpfile > $null
-#     if (-not (test-path $tmpfile))
-#     {
-#         throw(new-object `
-#                 -typename "System.IO.IOException" `
-#                 -argumentlist (Concat `
-#                                 "ERROR: Could not create temporary file name." `
-#                                 "Unknown problem.")
-#                                 )
-#     }
-
-#     & "$VIRTUALENVWRAPPER_PYTHON" "-c" 'from virtualenvwrapper.hook_loader import main; main()' --script "$tmpfile" $args
-
-#     if ($LASTEXITCODE -eq 0)
-#     {
-#         if (-not (test-path $tmpfile))
-#         {
-#             throw(new-object `
-#                     -typename "System.IO.FileNotFoundException" `
-#                     -argumentlist "ERROR: RunHook could not find temporary file $tmpfile."
-#                     )
-#         }
-#         . "$tmpfile"
-#     }
-#     remove-item $tmpfile
-# }
-
-# function RunHook { 
-#    write-debug -Message "RUNNING HOOK..." 
-# }
-
 # XXX: Test this
 # set up virtualenvwrapper properly
 function Initialize
