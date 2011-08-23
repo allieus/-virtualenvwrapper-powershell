@@ -1,4 +1,5 @@
 # set-strictmode -version "2.0"
+$script:thisDir = split-path $MyInvocation.MyCommand.Path -parent
 
 
 function Concat
@@ -71,12 +72,10 @@ function Initialize
         throw($_)
     }
 
-    get-childitem 'C:\Users\guillermo\Dev\powershell\virtualenvwrapper-win-compat-pure\virtualenvwrapper\Extensions' `
-                    -Filter '*.ps1' | `
-                                foreach-object { & $_.fullname }
+    $pathToExtensions = join-path $script:thisDir 'Extensions'
+    get-childitem $pathToExtensions -Filter '*.ps1' | foreach-object { & $_.fullname }
 
     [void] (New-Event -SourceIdentifier 'VirtualEnvWrapper.Initialize')
-    # RunHook "initialize"
 }
 
 

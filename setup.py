@@ -100,6 +100,7 @@ else:
 # should be true in a default installation of PowerShell 2.0.
 ps_modules = os.path.join(path.value, 'WindowsPowerShell', 'Modules')
 data_target = os.path.join(ps_modules, 'VirtualEnvWrapper')
+data_target2 = os.path.join(data_target, 'Extensions')
 
 data_files = [
     (data_target, ['virtualenvwrapper/VirtualEnvWrapper.psm1']),
@@ -107,6 +108,7 @@ data_files = [
     (data_target, ['virtualenvwrapper/Win.psm1']),
     (data_target, ['virtualenvwrapper/Support.psm1']),
     (data_target, ['virtualenvwrapper/VirtualenvWrapperTabExpansion.psm1']),
+    (data_target2, ['virtualenvwrapper/Extensions/UserScripts.ps1']),
     (os.path.join(data_target, 'en-US'), ['virtualenvwrapper/en-US/about_virtualenvwrapper_powershell.help.txt']),
 ]
 # =============================================================================
