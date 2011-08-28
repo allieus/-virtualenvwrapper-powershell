@@ -1,4 +1,5 @@
-11.8.7
-	* VirtualEnvWrapper clone in PowerShell
-	* UserScripts
+11.8.28
+	* VirtualEnvWrapper is now a clone in PowerShell (no Python code)
+	* UserScripts extension
+	* Project management extension
 	* Tab expasion for VirtualEnvWrapper
