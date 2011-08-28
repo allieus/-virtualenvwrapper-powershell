@@ -54,8 +54,9 @@ function global:VEW_RunInSubProcess {
 ######### Global Hooks #########################################################
 
     $PreMakeVirtualEnvHook = {
-        $desk = [environment]::GetFolderPath([environment+specialfolder]::Desktop)
         VEW_RunInSubProcess (join-path $env:WORKON_HOME 'VEW_PreMakeVirtualEnv.ps1')
+        # start-job -scriptblock { (join-path $args[0] 'VEW_PreMakeVirtualEnv.ps1') } -argumentlist $env:WORKON_HOME
+        # start-job -scriptblock { & $args[0] } -argumentlist (join-path $env:WORKON_HOME 'VEW_PreMakeVirtualEnv.ps1')
     }
 
     $PostMakeVirtualEnvHook = {

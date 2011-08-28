@@ -108,7 +108,8 @@ data_files = [
     (data_target, ['virtualenvwrapper/Win.psm1']),
     (data_target, ['virtualenvwrapper/Support.psm1']),
     (data_target, ['virtualenvwrapper/VirtualenvWrapperTabExpansion.psm1']),
-    (data_target2, ['virtualenvwrapper/Extensions/UserScripts.ps1']),
+    (data_target2, ['virtualenvwrapper/Extensions/Extension.UserScripts.ps1']),
+    (data_target2, ['virtualenvwrapper/Extensions/Extension.Project.ps1']),
     (os.path.join(data_target, 'en-US'), ['virtualenvwrapper/en-US/about_virtualenvwrapper_powershell.help.txt']),
 ]
 # =============================================================================
