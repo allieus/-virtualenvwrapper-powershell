@@ -38,13 +38,13 @@ function Initialize
     }
 
     $pathToExtensions = join-path $script:thisDir 'Extensions'
-    get-childitem $pathToExtensions -Filter '*.ps1' | foreach-object { & $_.fullname }
+    get-childitem $pathToExtensions -Filter 'Extension.*.ps1' | foreach-object { & $_.fullname }
 
     [void] (New-Event -SourceIdentifier 'VirtualEnvWrapper.Initialize')
 }
 
 
-function VerifyVirtualEnv
+function global:VerifyVirtualEnv
 {
     $venv = get-command $global:VIRTUALENVWRAPPER_VIRTUALENV -erroraction silentlycontinue
     if (-not $venv)
@@ -65,7 +65,7 @@ function VerifyVirtualEnv
 
 
 # verify that the requested environment exists
-function VerifyWorkonEnvironment
+function global:VerifyWorkonEnvironment
 {
     if (-not (test-path "$env:WORKON_HOME/$($args[0])"))
     {
@@ -81,7 +81,7 @@ function VerifyWorkonEnvironment
 
 
 # verify that the active environment exists
-function VerifyActiveEnvironment
+function global:VerifyActiveEnvironment
 {
     if (-not ((test-path env:VIRTUAL_ENV) -and (test-path $env:VIRTUAL_ENV)))
     {
