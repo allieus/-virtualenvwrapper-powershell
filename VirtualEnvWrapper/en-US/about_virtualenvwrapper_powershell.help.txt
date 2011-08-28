@@ -17,8 +17,8 @@ LONG DESCRIPTION
 	there is a New-VirtualEnvironment as well as a Remove-VirtualEnvironment
 	cmdlet. In order to make long-time users of virtualenvwrapper at home,
 	however, aliases and functions matching the original interface are provided
-	too. Notably, workon will wrap Set-VirtualEnv to make its behavior very
-	similar to the original workon function.
+	too. Notably, workon will wrap Set-VirtualEnvironment to make its behavior
+	very similar to the original workon function.
 
 CONFIGURATION
 
@@ -26,12 +26,7 @@ CONFIGURATION
 
 		This variable contains the path to the directory where all virtual
 		environments will be stored. By default, it points to
-		$env:WORKON_HOME/.virtualenvs.
-
-	$VirtualEnvWrapperExtensions
-
-		This is the path to the extensions store. $env:WORKON_HOME/Extensions
-		as well as this path, if present, will be searched for VWW extensions.
+		$HOME/.virtualenvs.
 
 	Making $env:WORKON_HOME a PSDrive
 

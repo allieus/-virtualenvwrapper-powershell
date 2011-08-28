@@ -111,6 +111,7 @@ data_files = [
     (data_target2, ['virtualenvwrapper/Extensions/Extension.UserScripts.ps1']),
     (data_target2, ['virtualenvwrapper/Extensions/Extension.Project.ps1']),
     (os.path.join(data_target, 'en-US'), ['virtualenvwrapper/en-US/about_virtualenvwrapper_powershell.help.txt']),
+    (os.path.join(data_target, 'en-US'), ['virtualenvwrapper/en-US/about_virtualenvwrapper_powershell_extensions.help.txt']),
 ]
 # =============================================================================
 
