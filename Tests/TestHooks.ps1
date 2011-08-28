@@ -9,7 +9,7 @@ $SetUp = {
     $global:__OLD_WORKON_HOME = $env:WORKON_HOME
     $env:WORKON_HOME = $global:__TEMP_WORKON_HOME
 
-    $script:pathToModule = "../virtualenvwrapper/Extensions/UserScripts.ps1"
+    $script:pathToModule = "../virtualenvwrapper/Extensions/Extension.UserScripts.ps1"
     # & $script:pathToModule
 
     $script:GLOBAL_HOOKS = (

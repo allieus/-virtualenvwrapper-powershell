@@ -144,7 +144,7 @@ function global:New-VirtualEnvProject {
 
     foreach ($t in $templates) {
         write-host "Applying template $t..."
-        & "$global:VEWRoot/Extensions/VirtualenvWrapper.Project.Template.$t.ps1" $envName
+        & "$global:VEWRoot/Extensions/Project.Template.$t.ps1" $envName
     }
 
     [void] (new-event -sourceidentifier "VirtualEnvWrapper.Project.PostMakeVirtualEnvProject" `
@@ -173,7 +173,7 @@ function global:Set-LocationToProject {
     }
 
     if (test-path "$env:VIRTUAL_ENV/.project") {
-        $projectDir = "$env:VIRTUAL_ENV/.project"
+        $projectDir = get-content "$env:VIRTUAL_ENV/.project"
         if (test-path $projectDir) {
                 set-location $projectDir
         }   
