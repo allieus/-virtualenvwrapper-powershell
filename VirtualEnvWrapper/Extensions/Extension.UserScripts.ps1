@@ -7,8 +7,8 @@ function global:VEW_RunInSubProcess {
                                 -nonewwindow `
                                 -arg '-Nologo', `
                                      '-NoProfile', `
-                                     # '-NoNewWindow', `
-                                     '-File', $Script
+                                     # Between quotes so that paths with spaces work.
+                                     '-File', "`"$Script`""
 }
 
 
