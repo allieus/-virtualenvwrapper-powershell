@@ -128,6 +128,19 @@ ${TestCase_ - Get-VirtualEnvironment } = {
     makeTestCase
 }
 
+${TestCase_ - VIRTUALENVWRAPPER_VIRTUALENV_ARGS } = {
+
+    ${test_ - Pass arguments correctly } = {
+        $global:VIRTUALENVWRAPPER_VIRTUALENV_ARGS = "--foo"
+        $actual = New-VirtualEnvironment "foo" 2>&1
+        $global:VIRTUALENVWRAPPER_VIRTUALENV_ARGS = ""
+
+        "$actual".StartsWith('Usage')
+    }
+    
+    makeTestCase
+}
+
 $TearDown = {
     # Restore modules.
     get-module | remove-module -erroraction silentlycontinue
