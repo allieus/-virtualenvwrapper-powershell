@@ -67,7 +67,7 @@ function New-VirtualEnvironment
     [string] $envName = $Name
 
     push-location $env:WORKON_HOME
-        & "virtualenv.exe" $Name $args
+        & "virtualenv.exe" $Name $args $global:VIRTUALENVWRAPPER_VIRTUALENV_ARGS
     pop-location
 
     # If they passed a help option or got an error from virtualenv,
@@ -336,7 +336,6 @@ export-modulemember -alias "cdsitepackages"
 export-modulemember -alias "cdvirtualenv"
 export-modulemember -alias "cpvirtualenv"
 export-modulemember -alias "lssitepackages"
-# export-modulemember -alias "lsvirtualenv"
 export-modulemember -alias "mkvirtualenv"
 export-modulemember -alias "rmvirtualenv"
 
