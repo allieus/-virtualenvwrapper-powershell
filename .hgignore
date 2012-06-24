@@ -19,6 +19,9 @@ virtualenvwrapper/docs
 .tox
 *.orig
 
+*.sublime-project
+*.sublime-workspace
+
 _*.txt
 
 syntax: re

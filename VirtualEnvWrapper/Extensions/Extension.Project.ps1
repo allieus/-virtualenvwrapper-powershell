@@ -55,18 +55,13 @@ $PostMakeVirtualEnvProjectHook = {
 #==============================================================================
 
 # XXX We shouldn't need to define this as global (and the others either).
-function global:VEW_Project_VerifyProjectHome { 
-    if (-not (test-path variable:ProjectHome))
-    {
-        throw(
-            "You must set the `$ProjectHome variable to point to a directory."
-        )
+function global:VEW_Project_VerifyProjectHome {
+    if (-not (test-path variable:ProjectHome)) {
+        throw("You must set the `$ProjectHome variable to point to a directory.")
     }
 
     if (-not (test-path $ProjectHome)) {
-        throw(
-            "Set `$ProjectHome to an existing directory."
-            ) 
+        throw("Set `$ProjectHome to an existing directory.")
     }
 }
 
@@ -87,8 +82,16 @@ function global:Set-VirtualEnvProject {
         $Venv = $env:VIRTUAL_ENV
     }
 
+    if (!(test-path $venv)) {
+        throw ("Can't find virtualenv.")
+    }
+
     if (-not $Project) {
-       $Project = $pwd.providerpath 
+       $Project = $pwd.providerpath
+    }
+
+    if (!(test-path $project)) {
+        throw("Can't find project directory.")
     }
 
     Write-Host "Setting project for $(split-path $Venv -leaf) to $Project"
@@ -112,11 +115,11 @@ function global:New-VirtualEnvProject {
         VEW_Project_VerifyProjectHome
     }
     catch {
-        throw 
+        throw
     }
 
     if ((test-path "$global:ProjectHome/$EnvName")) {
-        throw("Project $EnvName already exists")        
+        throw("Project $EnvName already exists")
     }
 
     try {
@@ -148,7 +151,7 @@ function global:New-VirtualEnvProject {
     }
 
     [void] (new-event -sourceidentifier "VirtualEnvWrapper.Project.PostMakeVirtualEnvProject" `
-                -eventarguments $envName)
+                -eventarguments $function)
 }
 
 
@@ -172,18 +175,16 @@ function global:Set-LocationToProject {
         throw
     }
 
-    if (test-path "$env:VIRTUAL_ENV/.project") {
-        $projectDir = get-content "$env:VIRTUAL_ENV/.project"
-        if (test-path $projectDir) {
-                set-location $projectDir
-        }   
-       else {
-           throw("Project directory $projectDir does not exist.")
-       }
+    if (!(test-path "$env:VIRTUAL_ENV/.project")) {
+        throw("No project set in $env:VIRTUAL_ENV/.project")
     }
-    else {
-        throw("No project set in $VIRTUAL_ENV/.project")
+
+    $projectDir = get-content "$env:VIRTUAL_ENV/.project"
+    if (!(test-path $projectDir)) {
+       throw("Project directory $projectDir does not exist.")
     }
+
+    set-location $projectDir
 }
 
 
