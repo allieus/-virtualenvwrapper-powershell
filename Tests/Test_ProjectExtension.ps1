@@ -14,6 +14,7 @@ $setUpTestSuite = {
 
     remove-item alias:cdproject
     remove-item alias:mkproject
+    remove-item alias:setvirtualenvproject
     unregister-event "virtualenvwrapper.*"
 
     $env:VIRTUAL_ENV = $_oldVirtualEnv
@@ -34,6 +35,7 @@ $TestCase_AreAliasAvailable = {
     }
 
     $test_MkProjectAliasExists = {(test-path alias:mkproject)}
+    $test_MkProjectAliasExists = {(test-path alias:setvirtualenvproject)}
 
     makeTestCase
 }

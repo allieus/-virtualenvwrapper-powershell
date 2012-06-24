@@ -186,3 +186,4 @@ function global:Set-LocationToProject {
 
 new-alias -name 'cdproject' -value Set-LocationToProject -scope "Global"
 new-alias -name 'mkproject' -value New-VirtualEnvProject -scope "Global"
+new-alias -name 'setvirtualenvproject' -value Set-VirtualEnvProject -scope "Global"
