@@ -314,13 +314,15 @@ $TestCase_ProjectEventsTriggering = {
     $setUpTestCase = {
         param($Logic)
 
-        # we need this because it's exported by virtualenvwrapper.
+        # we need this because it should be exported by virtualenvwrapper and
+        # we are not sourcing that namespace here.
         function global:VEW_RunInSubProcess {
             param($Script)
 
             start-process 'powershell.exe' `
-                                        -nonewwindow `
-                                        -arg '-Nologo', `
+                                       -NoNewWindow `
+                                       -Wait `
+                                        -ArgumentList '-Nologo', `
                                              '-NoProfile', `
                                              # Between quotes so that paths with spaces work.
                                              '-File', "`"$Script`""
@@ -340,7 +342,7 @@ $TestCase_ProjectEventsTriggering = {
 
         & $Logic
 
-        # remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
+        remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
         remove-item function:VEW_RunInSubProcess
     }
 
@@ -354,7 +356,6 @@ $TestCase_ProjectEventsTriggering = {
 
     $test_PreMakeProject = {
         "[void] (new-item -type 'f' -path '$env:WORKON_HOME/xxx.out')"  | out-file -filepath "$env:WORKON_HOME/VEW_PreMakeProject.ps1" -encoding "utf8"
-        # set-psdebug -Step
         [void] (new-event "virtualenvwrapper.project.premakevirtualenvproject")
         (test-path "$env:WORKON_HOME/xxx.out")
     }

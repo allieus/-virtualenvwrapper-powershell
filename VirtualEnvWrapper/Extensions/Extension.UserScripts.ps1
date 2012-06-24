@@ -1,9 +1,10 @@
 # Used by events. Must be global so that the Register-EngineEvent -Actions
-# finds it when they are executed in the global scope. 
+# finds it when they are executed in the global scope.
 function global:VEW_RunInSubProcess {
     param($Script)
 
     start-process 'powershell.exe' `
+                                -wait `
                                 -nonewwindow `
                                 -arg '-Nologo', `
                                      '-NoProfile', `
@@ -12,7 +13,7 @@ function global:VEW_RunInSubProcess {
 }
 
 
-& {         
+& {
     $GenerateGlobalHookScripts = {
     # Closures in -Action values for Engine Events won't do what you expect, so
     # state must go in the same scope as the scriptblock to be run as action.
