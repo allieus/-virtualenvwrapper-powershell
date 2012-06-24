@@ -360,6 +360,12 @@ $TestCase_ProjectEventsTriggering = {
         (test-path "$env:WORKON_HOME/xxx.out")
     }
 
+    $test_PostMakeProject = {
+        "[void] (new-item -type 'f' -path '$env:WORKON_HOME/xxx.out')"  | out-file -filepath "$env:WORKON_HOME/VEW_PostMakeProject.ps1" -encoding "utf8"
+        [void] (new-event "virtualenvwrapper.project.postmakevirtualenvproject")
+        (test-path "$env:WORKON_HOME/xxx.out")
+    }
+
     makeTestCase
 }
 
