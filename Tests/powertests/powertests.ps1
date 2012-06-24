@@ -280,8 +280,8 @@ function Run-Test {
     try {
 
         # unload all modules (todo: too drastic?)
-        $__moduleNames = get-module | select-object -expandproperty "name"
-        remove-module (get-module)
+        $__moduleNames = @(get-module | select-object -expandproperty "name")
+        get-module | remove-module
 
         if (!((test-path $path) -and (get-item $path).PSIsContainer)) {
             write-error -message "Cannot find specified path or it isn't a directory."
@@ -302,9 +302,9 @@ function Run-Test {
         $testResults = Invoke-PowerTest -TestCollection $testCollection
         Format-TestResult -TestResult $testResults
 
-        Unregister-Event -SourceIdentifier "PowerTest.*"
     }
     finally {
+        Unregister-Event -SourceIdentifier "PowerTest.*"
         $__moduleNames | import-module
     }
 }

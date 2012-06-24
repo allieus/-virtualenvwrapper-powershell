@@ -5,15 +5,19 @@ $setUpTestSuite = {
     param($logic)
 
     $_oldVirtualEnv = $env:VIRTUAL_ENV
+    $_oldWORKON_HOME = $env:WORKON_HOME
     if (test-path variable:ProjectHome) { $_oldProjectHome = $global:ProjectHome }
 
     . "./../virtualenvwrapper/extensions/extension.project.ps1"
+
     & $logic
 
     remove-item alias:cdproject
+    remove-item alias:mkproject
     unregister-event "virtualenvwrapper.*"
 
     $env:VIRTUAL_ENV = $_oldVirtualEnv
+    $env:WORKON_HOME = $_oldWORKON_HOME
     if ($_oldProjectHome) {
         $global:ProjectHome = $_oldProjectHome
     }
@@ -215,6 +219,9 @@ $TestCase_SetLocationToProeject = {
 $TestCase_NewVirtualEnvProject = {
     $setUpTestCase = {
         param($Logic)
+
+        $oldLocation = get-location
+
         # make workon home
         $newWorkonHome = "$env:TEMP/PowerTestTests/WORKONHOME"
         $newProjectsHome = "$env:TEMP/PowerTestTests/PROJECTS"
@@ -235,6 +242,7 @@ $TestCase_NewVirtualEnvProject = {
 
         & $Logic
 
+        set-location $oldLocation
         remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
     }
 
@@ -297,6 +305,58 @@ $TestCase_NewVirtualEnvProject = {
         (test-path "$ProjectHome/NEWPROJECT")
         (test-path "$env:VIRTUAL_ENV/.project")
         (get-content "$env:VIRTUAL_ENV/.project") -eq "$newProjectsHome/NEWPROJECT"
+    }
+
+    makeTestCase
+}
+
+$TestCase_ProjectEventsTriggering = {
+    $setUpTestCase = {
+        param($Logic)
+
+        # we need this because it's exported by virtualenvwrapper.
+        function global:VEW_RunInSubProcess {
+            param($Script)
+
+            start-process 'powershell.exe' `
+                                        -nonewwindow `
+                                        -arg '-Nologo', `
+                                             '-NoProfile', `
+                                             # Between quotes so that paths with spaces work.
+                                             '-File', "`"$Script`""
+        }
+
+        # make workon home
+        $newWorkonHome = "$env:TEMP/PowerTestTests/WORKONHOME"
+        $newProjectsHome = "$env:TEMP/PowerTestTests/PROJECTS"
+        [void] (new-item -itemtype "d" -path $newWorkonHome -force)
+        [void] (new-item -itemtype "d" -path $newProjectsHome -force)
+        [void] (new-item -itemtype "d" -path "$newWorkonHome/FOO" -force)
+        [void] (new-item -itemtype "d" -path "$newProjectsHome/BAR" -force)
+
+        $env:WORKON_HOME = $newWorkonHome
+        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
+        $ProjectHome = "$newProjectsHome"
+
+        & $Logic
+
+        # remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
+        remove-item function:VEW_RunInSubProcess
+    }
+
+    $test_InitializeEvent = {
+        new-event "virtualenvwrapper.initialize"
+        # were scripts created?
+
+        (test-path "$env:WORKON_HOME/VEW_PreMakeProject.ps1")
+        (test-path "$env:WORKON_HOME/VEW_PostMakeProject.ps1")
+    }
+
+    $test_PreMakeProject = {
+        "[void] (new-item -type 'f' -path '$env:WORKON_HOME/xxx.out')"  | out-file -filepath "$env:WORKON_HOME/VEW_PreMakeProject.ps1" -encoding "utf8"
+        # set-psdebug -Step
+        [void] (new-event "virtualenvwrapper.project.premakevirtualenvproject")
+        (test-path "$env:WORKON_HOME/xxx.out")
     }
 
     makeTestCase
