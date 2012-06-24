@@ -11,7 +11,7 @@
 $script:thisDir = split-path $MyInvocation.MyCommand.Path -parent
 # XXX This one shouldn't be needed if this was a module. We need to know where
 # to find extensions (and templates).
-$global:VEWRoot = split-path $script:thisDir -parent
+$script:VEWRoot = split-path $script:thisDir -parent
 
 # Define actions for event listeners.
 ###############################################################################
@@ -106,11 +106,13 @@ function global:New-VirtualEnvProject {
     folder.
 
     .DESCRIPTION
-    You need to specify the name of the new virtual environment as well as the
-    name of the new project folder. The variable $ProjectHome must be set and
-    point to an existing directory. This is where project folders are created.
+    You need to specify the name of the new virtual environment. The variable
+    $ProjectHome must be set and point to an existing directory. This is where
+    project folders are created.
 #>
-    param($EnvName,[string[]]$Templates)
+    param([string]$EnvName=$(throw("Need a name for the virtual environment.")),
+          [string[]]$Templates=@())
+
     try {
         VEW_Project_VerifyProjectHome
     }
@@ -118,8 +120,8 @@ function global:New-VirtualEnvProject {
         throw
     }
 
-    if ((test-path "$global:ProjectHome/$EnvName")) {
-        throw("Project $EnvName already exists")
+    if ((test-path "$ProjectHome/$EnvName")) {
+        throw("Project $EnvName already exists.")
     }
 
     try {
@@ -129,15 +131,8 @@ function global:New-VirtualEnvProject {
         throw
     }
 
-    if (-not $EnvName) {
-        throw("Need a Venv name.")
-    }
-
     [void] (New-Event -sourceidentifier "VirtualEnvWrapper.Project.PreMakeVirtualEnvProject" `
                 -eventarguments $envName)
-
-
-    Set-Location $ProjectHome
 
     write-host "Creating $ProjectHome/$EnvName"
     [void] (New-Item -ItemType 'directory' -Path "$ProjectHome/$EnvName")
@@ -146,8 +141,9 @@ function global:New-VirtualEnvProject {
     Set-Location "$ProjectHome/$EnvName"
 
     foreach ($t in $templates) {
+        # todo: implement ant test this
         write-host "Applying template $t..."
-        & "$global:VEWRoot/Extensions/Project.Template.$t.ps1" $envName
+        & "$script:VEWRoot/Extensions/Project.Template.$t.ps1" $envName
     }
 
     [void] (new-event -sourceidentifier "VirtualEnvWrapper.Project.PostMakeVirtualEnvProject" `
