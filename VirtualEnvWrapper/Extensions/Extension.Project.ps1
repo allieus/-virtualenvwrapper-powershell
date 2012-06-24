@@ -140,10 +140,22 @@ function global:New-VirtualEnvProject {
 
     Set-Location "$ProjectHome/$EnvName"
 
+    if ($templates.count -gt 0 -and
+        (!(test-path variable:VirtualenvWrapperTemplates)) -or
+        ("$VirtualenvWrapperTemplates" -and !(test-path "$VirtualenvWrapperTemplates"))) {
+            throw ("Set the `$VirtualenvWrapperTemplates variable to point to an existing directory containing the templates.")
+    }
+
     foreach ($t in $templates) {
+        $item = get-item (join-path $VirtualenvWrapperTemplates "Project.Template.$t.ps1") -erroraction "SilentlyContinue"
+        if (!$item) {
+            write-error "Template '$t' not found. Not applying."
+            continue
+        }
+
         # todo: implement ant test this
         write-host "Applying template $t..."
-        & "$script:VEWRoot/Extensions/Project.Template.$t.ps1" $envName
+        & $item $envName
     }
 
     [void] (new-event -sourceidentifier "VirtualEnvWrapper.Project.PostMakeVirtualEnvProject" `

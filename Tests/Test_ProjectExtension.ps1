@@ -371,4 +371,62 @@ $TestCase_ProjectEventsTriggering = {
     makeTestCase
 }
 
+$TestCase_Templates = {
+    $setUpTestCase = {
+        param($Logic)
+
+        $oldLocation = get-location
+
+        # make workon home
+        $newWorkonHome = "$env:TEMP/PowerTestTests/WORKONHOME"
+        $newProjectsHome = "$env:TEMP/PowerTestTests/PROJECTS"
+        [void] (new-item -itemtype "d" -path $newWorkonHome -force)
+        [void] (new-item -itemtype "d" -path $newProjectsHome -force)
+        [void] (new-item -itemtype "d" -path "$newWorkonHome/FOO" -force)
+        [void] (new-item -itemtype "d" -path "$newProjectsHome/BAR" -force)
+
+        # redefine these two function so they are accessible in this scope without
+        # loading virtualenvwrapper-powershell.
+        function New-VirtualEnvironment { $true }
+
+        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
+        $ProjectHome = "$newProjectsHome"
+
+        & $Logic
+
+        set-location $oldLocation
+        remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
+    }
+
+    $test_NonExistantTemplatesSource = {
+        try {
+            mkproject -envname "xxx" -templates "foo"
+            $false
+        }
+        catch {
+            $_.exception.message -eq "Set the `$VirtualenvWrapperTemplates variable to point to an existing directory containing the templates."
+        }
+    }
+
+    $test_NonExistantTemplate = {
+        $VirtualenvWrapperTemplates = "$newWorkonHome"
+        [void] (mkproject -envname "xxx" -templates "foo")
+
+         # this is a non-terminating error, so we can't try/catch it.
+         $error[0].exception.message -eq "Template 'foo' not found. Not applying."
+    }
+
+    $test_Template = {
+        $VirtualenvWrapperTemplates = "$newWorkonHome"
+        [void] (set-content -path "$VirtualenvWrapperTemplates/Project.Template.Foo.ps1" `
+                    -value "[void] (new-item -itemtype 'f' -path '$newWorkonHome/foo.xxx')" `
+                    -encoding "utf8")
+        [void] (mkproject -envname "xxx" -templates "foo")
+
+        (test-path "$newWorkonHome/foo.xxx")
+    }
+
+    makeTestCase
+}
+
 makeTestSuite
