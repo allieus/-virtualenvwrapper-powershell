@@ -60,14 +60,14 @@ $TestCase_EventTriggering = {
         $newWorkOnHome = (new-item -itemtype "d" -path "$env:TEMP/PowerTestTests" -force).fullname
         $env:WORKON_HOME = $newWorkOnHome
 
+        [void] (new-event "virtualenvwrapper.Initialize")
+
         & $logic
 
         remove-item $newWorkOnHome -recurse -force
     }
 
-    $test_Whatever = {
-        [void] (new-event "virtualenvwrapper.Initialize")
-        start-sleep -seconds 0
+    $test_InitializeGlobalHooks = {
 
         $hooks = get-childitem "$env:WORKON_HOME" -filter "*.ps1" | select-object -expandproperty "name"
 
@@ -79,6 +79,97 @@ $TestCase_EventTriggering = {
         $hooks -contains 'VEW_PostActivateVirtualEnv.ps1'
         $hooks -contains 'VEW_PreDeactivateVirtualEnv.ps1'
         $hooks -contains 'VEW_PostDeactivateVirtualEnv.ps1'
+    }
+
+    $test_InitializeLocalHooks = {
+        [void] (new-event "virtualenvwrapper.PreMakeVirtualenv" -eventarguments "xxx")
+        $hooks = get-childitem "$env:WORKON_HOME/xxx/Scripts" -filter "*.ps1" | select-object -expandproperty "name"
+
+        $hooks -contains 'VEW_PreActivateVirtualEnv.ps1'
+        $hooks -contains 'VEW_PostActivateVirtualEnv.ps1'
+        $hooks -contains 'VEW_PreDeactivateVirtualEnv.ps1'
+        $hooks -contains 'VEW_PostDeactivateVirtualEnv.ps1'
+    }
+
+    $test_PreMakeVirtualeEnv = {
+        # runs as subproc
+        set-content -path "$env:WORKON_HOME/VEW_PreMakeVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PreMakeVirtualenv")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        !(test-path env:XXX)
+    }
+
+    $test_PostMakeVirtualEnv = {
+        # runs as subproc
+        set-content -path "$env:WORKON_HOME/VEW_PostMakeVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PostMakeVirtualenv")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        (test-path env:XXX)
+        ($env:XXX -eq "42")
+
+        remove-item env:XXX
+    }
+
+    $test_PreRemoveVirtualenv = {
+        # runs as subproc
+        set-content -path "$env:WORKON_HOME/VEW_PreRemoveVirtualenv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PreRemoveVirtualenv")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        !(test-path env:XXX)
+    }
+
+    $test_PostRemoveVirtualEnv = {
+        # runs as subproc
+        set-content -path "$env:WORKON_HOME/VEW_PostRemoveVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PostRemoveVirtualEnv")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        !(test-path env:XXX)
+    }
+
+
+    # Run this test before the previous one or it will never pass.
+    $test_PreActivateVirtualEnvLocal = {
+        [void] (new-event "virtualenvwrapper.PreMakeVirtualenv" -eventarguments "foo")
+        set-content -path "$env:WORKON_HOME/foo/Scripts/VEW_PreActivateVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PreActivateVirtualEnv" -eventarguments "foo")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        (test-path env:XXX)
+        ($env:XXX -eq 42)
+
+        remove-item env:XXX
+    }
+
+    # Run this test AFTER the previous one or the previous one will never pass.
+    $test_PreActivateVirtualEnvGlobal = {
+        # runs as subproc
+        set-content -path "$env:WORKON_HOME/VEW_PreActivateVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PreActivateVirtualEnv" -eventarguments "foo")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        !(test-path env:XXX)
     }
 
     makeTestCase
