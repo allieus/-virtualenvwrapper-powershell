@@ -172,6 +172,56 @@ $TestCase_EventTriggering = {
         !(test-path env:XXX)
     }
 
+    $test_PostActivateVirtualEnvGlobal ={
+        set-content -path "$env:WORKON_HOME/VEW_PostActivateVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PostActivateVirtualEnv" -eventarguments "foo")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        (test-path env:XXX)
+
+        remove-item env:XXX
+    }
+
+    $test_PostActivateVirtualEnvLocal = {
+        set-content -path "$env:WORKON_HOME/VEW_PostActivateVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PostActivateVirtualEnv" -eventarguments "foo")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        (test-path env:XXX)
+
+        remove-item env:XXX
+    }
+
+    $test_PreRemoveVirtualEnvGlobal = {
+        # runs as subproc
+        set-content -path "$env:WORKON_HOME/VEW_PreRemoveVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PreRemoveVirtualEnv" -eventarguments "foo")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        !(test-path env:XXX)
+    }
+
+    $test_PostRemoveVirtualEnvGlobal = {
+        # runs as subproc
+        set-content -path "$env:WORKON_HOME/VEW_PostRemoveVirtualEnv.ps1" `
+                    -value "`$env:XXX = 42; [void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/xxx.out')" `
+                    -encoding "utf8"
+
+        [void] (new-event "virtualenvwrapper.PostRemoveVirtualEnv" -eventarguments "foo")
+
+        (test-path "$env:WORKON_HOME/xxx.out")
+        !(test-path env:XXX)
+    }
+
     makeTestCase
 }
 
