@@ -1,4 +1,5 @@
 NEXT
+	* Added $VirtualenvWrapperHookDir customization variable.
 	* Added tests for the project extension.
 	* Added mkproject alias.
 	* Added setvirtualenvproject alias.

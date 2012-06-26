@@ -5,7 +5,7 @@
 # Ensure cleanup at exit. (Based on PowerTab.)
 #------------------------------------------------------------------------------
 # XXX We should combine this with the TabExpansion cleanup part.
-$module = $MyInvocation.MyCommand.ScriptBlock.Module 
+$module = $MyInvocation.MyCommand.ScriptBlock.Module
 $module.OnRemove = {
     Unregister-Event -SourceIdentifier 'VirtualEnvWrapper.*'
     Remove-Job -Name 'VirtualenvWrapper.*' -Force
@@ -34,10 +34,13 @@ if (-not $VIRTUALENVWRAPPER_VIRTUALENV)
     $global:VIRTUALENVWRAPPER_VIRTUALENV = 'virtualenv.exe'
 }
 
-# TODO: Implement this.
-if (-not $VIRTUALENVWRAPPER_HOOK_DIR)
-{
-    $global:VIRTUALENVWRAPPER_HOOK_DIR = $env:WORKON_HOME
+# We'll store global hooks here.
+if (-not (test-path variable:VirtualEnvWrapperHookDir)) {
+    $global:VirtualEnvWrapperHookDir = $env:WORKON_HOME
+}
+else if (-not (test-path $VirtualEnvWrapperHookDir)) {
+    write-warning -message "Can't find path '$VirtualEnvWrapperHookDir' (`$VirtualEnvWrapperHookDir). Defaulting to `$env:WORKON_HOME."
+    $global:VirtualEnvWrapperHookDir = $env:WORKON_HOME
 }
 
 # TODO: Implement this.
@@ -55,7 +58,7 @@ if (-not $VIRTUALENVWRAPPER_LOG_DIR)
 function New-VirtualEnvironment
 {
     param($Name)
-    
+
     try {
         VerifyWorkonHome
         VerifyVirtualEnv
@@ -99,7 +102,7 @@ function Remove-VirtualEnvironment
     $env_name = $args[0]
 
     try {
-       VerifyWorkonHome 
+       VerifyWorkonHome
     }
     catch [System.IO.IOException] {
         throw($_)
@@ -117,7 +120,7 @@ function Remove-VirtualEnvironment
         $curr_env = ""
     }
     else
-    {        
+    {
         $curr_env = resolve-path "$env:VIRTUAL_ENV" -erroraction silentlycontinue
     }
 
@@ -226,13 +229,13 @@ function virtualenvwrapper_get_site_packages_dir
 # virtualenv.
 function CDIntoSitePackages
 {
-    try { 
+    try {
         VerifyWorkonHome
         VerifyActiveEnvironment
     }
     catch [System.IO.IOException] {
         throw($_)
-    }    
+    }
     $site_packages = virtualenvwrapper_get_site_packages_dir
     set-location "$site_packages/$args"
 }
@@ -241,7 +244,7 @@ function CDIntoSitePackages
 # Does a ``cd`` to the root of the currently-active virtualenv.
 function CDIntoVirtualEnvironment
 {
-    try { 
+    try {
         VerifyWorkonHome
         VerifyActiveEnvironment
     }
@@ -256,7 +259,7 @@ function CDIntoVirtualEnvironment
 # virtualenv
 function GetSitePackages
 {
-    try { 
+    try {
         VerifyWorkonHome
         VerifyActiveEnvironment
     }
@@ -292,7 +295,7 @@ function workon
     if ("$args")
     {
         Set-VirtualEnvironment "$args"
-    } 
+    }
     else
     {
         Get-VirtualEnvironment
@@ -305,12 +308,12 @@ function workon
 # =============================================================================
 # Public interface
 # =============================================================================
-new-alias -name "cdsitepackages"    -value "CDIntoSitePackages"     
+new-alias -name "cdsitepackages"    -value "CDIntoSitePackages"
 new-alias -name "cdvirtualenv"      -value "CDIntoVirtualEnvironment"
-new-alias -name "cpvirtualenv"      -value "Copy-VirtualEnvironment" 
-new-alias -name "lssitepackages"    -value "GetSitePackages"        
-# new-alias -name "lsvirtualenv"      -value "GetVirtualEnvironments" 
-new-alias -name "mkvirtualenv"      -value "New-VirtualEnvironment" 
+new-alias -name "cpvirtualenv"      -value "Copy-VirtualEnvironment"
+new-alias -name "lssitepackages"    -value "GetSitePackages"
+# new-alias -name "lsvirtualenv"      -value "GetVirtualEnvironments"
+new-alias -name "mkvirtualenv"      -value "New-VirtualEnvironment"
 new-alias -name "rmvirtualenv"      -value "Remove-VirtualEnvironment"
 # =============================================================================
 

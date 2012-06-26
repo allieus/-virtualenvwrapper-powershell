@@ -2,6 +2,7 @@ $setUpTestSuite = {
     param($logic)
 
     $_oldWORKON_HOME = $env:WORKON_HOME
+    $_oldVirtualEnvWrapperHookDir = $VirtualenvWrapperHookDir
 
     . "./../virtualenvwrapper/extensions/extension.userscripts.ps1"
 
@@ -10,7 +11,10 @@ $setUpTestSuite = {
     unregister-event "virtualenvwrapper.*"
     remove-item function:VEW_RunInSubProcess
 
+    remove-item env:WORKON_HOME -erroraction "SilentlyContinue"
+    remove-item variable:VirtualenvWrapperHookDir -erroraction "SilentlyContinue"
     if ($_oldWORKON_HOME) { $env:WORKON_HOME = $_oldWORKON_HOME }
+    if ($_oldVirtualEnvWrapperHookDir) { $global:VirtualEnvWrapperHookDir = $_oldVirtualEnvWrapperHookDir }
 }
 
 $TestCase_Utils = {
@@ -59,6 +63,7 @@ $TestCase_EventTriggering = {
         # fake WORKON_HOME
         $newWorkOnHome = (new-item -itemtype "d" -path "$env:TEMP/PowerTestTests" -force).fullname
         $env:WORKON_HOME = $newWorkOnHome
+        $global:VirtualenvWrapperHookDir = $env:WORKON_HOME
 
         [void] (new-event "virtualenvwrapper.Initialize")
 
