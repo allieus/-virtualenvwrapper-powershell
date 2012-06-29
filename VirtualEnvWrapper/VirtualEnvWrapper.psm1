@@ -38,7 +38,7 @@ if (-not $VIRTUALENVWRAPPER_VIRTUALENV)
 if (-not (test-path variable:VirtualEnvWrapperHookDir)) {
     $global:VirtualEnvWrapperHookDir = $env:WORKON_HOME
 }
-else if (-not (test-path $VirtualEnvWrapperHookDir)) {
+elseif (-not (test-path $VirtualEnvWrapperHookDir)) {
     write-warning -message "Can't find path '$VirtualEnvWrapperHookDir' (`$VirtualEnvWrapperHookDir). Defaulting to `$env:WORKON_HOME."
     $global:VirtualEnvWrapperHookDir = $env:WORKON_HOME
 }
