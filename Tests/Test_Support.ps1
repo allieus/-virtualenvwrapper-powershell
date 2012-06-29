@@ -3,6 +3,7 @@ $setUpTestSuite = {
 
     $_oldWORKON_HOME = $env:WORKON_HOME
     $_oldVirtualEnvWrapperHookDir = $VirtualenvWrapperHookDir
+    $_oldVirtualEnvWrapperVirtualeEnv = $global:VIRTUALENVWRAPPER_VIRTUALENV
 
     import-module "./../virtualenvwrapper/support.psm1"
 
@@ -15,15 +16,56 @@ $setUpTestSuite = {
     remove-item env:WORKON_HOME -erroraction "SilentlyContinue"
     remove-item variable:VirtualenvWrapperHookDir -erroraction "SilentlyContinue"
     if ($_oldWORKON_HOME) { $env:WORKON_HOME = $_oldWORKON_HOME }
+    if ($_oldVirtualEnvWrapperVirtualeEnv) { $global:VIRTUALENVWRAPPER_VIRTUALENV = $_oldVirtualEnvWrapperVirtualeEnv }
     if ($_oldVirtualEnvWrapperHookDir) { $global:VirtualEnvWrapperHookDir = $_oldVirtualEnvWrapperHookDir }
 }
 
 $TestCase_VerifyFunctions = {
+    $test_VerifyVirtualEnvWrapperVirtualEnvFailsWhenVariableNotDefined =  {
+        remove-item variable:VIRTUALENVWRAPPER_VIRTUALENV -erroraction "SilentlyContinue"
+        try {
+            VerifyVirtualEnv
+            set-psdebug -Step
+            $false
+        }
+        catch {
+            if ($_.Exception.message -eq "`$VIRTUALENVWRAPPER_VIRTUALENV is not defined.") {
+                $true
+            }
+            else {
+                $false
+            }
+        }
+    }
+
+    $test_VerifiyVirtualenvFailsWhenVirtualEnvIsNotFound = {
+        $global:VIRTUALENVWRAPPER_VIRTUALENV = "xyz.zyx"
+        try {
+            VerifyVirtualEnv
+            $false
+        }
+        catch [system.io.filenotfoundexception] {
+            $_.exception.message -eq "ERROR: virtualenvwrapper could not find virtualenv in your PATH."
+        }
+    }
+
+    $test_VerifiyVirtualenvFailsWhenVirtualEnvIsNotFound = {
+        $global:VIRTUALENVWRAPPER_VIRTUALENV = "xyz.zyx"
+        try {
+            VerifyVirtualEnv
+            $false
+        }
+        catch [system.io.filenotfoundexception] {
+            $_.exception.message -eq "ERROR: virtualenvwrapper could not find virtualenv in your PATH."
+        }
+    }
+
     $test_VerifiyWorkonHomeThrowsErrorWhenNotDefined = {
         [void] (remove-item env:WORKON_HOME)
 
         try {
             [void] (VerifyWorkonHome)
+            $false
         }
         catch [io.directorynotfoundexception]{
             $true
@@ -35,8 +77,33 @@ $TestCase_VerifyFunctions = {
 
         try {
             [void] (VerifyWorkonHome)
+            $false
         }
         catch [io.directorynotfoundexception]{
+            $true
+        }
+    }
+
+    $test_VerifyActiveEnvironmentFailsWithInexistingPath = {
+        $env:VIRTUAL_ENV = "XYZ:"
+
+        try {
+            [void] (VerifyActiveEnvironment)
+            $false
+        }
+        catch [system.io.ioexception] {
+            $true
+        }
+    }
+
+    $test_VerifyActiveEnvironmentFailsIfVirtualEnvEnvironmentVariableIsNotSet = {
+        remove-item env:VIRTUAL_ENV -erroraction "SilentlyContinue"
+
+        try {
+            [void] (VerifyActiveEnvironment)
+            $false
+        }
+        catch [system.io.ioexception] {
             $true
         }
     }
@@ -138,6 +205,10 @@ $TestCase_Initialize = {
         $target_1 = "$env:TEMP/VirtualenvWrapperTests/"
         [void] (new-item -itemtype "d" -path $target_1 -force)
 
+        remove-item alias:cdproject -erroraction "SilentlyContinue"
+        remove-item alias:mkproject -erroraction "SilentlyContinue"
+        remove-item alias:setvirtualenvproject -erroraction "SilentlyContinue"
+
         Initialize
         & $Logic
 
@@ -150,10 +221,9 @@ $TestCase_Initialize = {
     }
 
     $test_ThatExtensionsAreLoaded = {
-
         # virtualenvwrapper will load extenions when Initialize runs.
-        test-path function:getprojects
-        test-path alias:cdprojects
+        test-path alias:mkproject
+        test-path alias:cdproject
     }
 
     makeTestCase
