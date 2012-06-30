@@ -31,7 +31,7 @@ function global:VEW_RunInSubProcess {
 
         foreach ($x in $GLOBAL_HOOKS)
         {
-            [void] (New-Item -itemtype 'file' -path (join-path $global:VirtualenvWrapperHookDir $x))
+            [void] (New-Item -itemtype 'file' -path (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR $x))
         }
     }
 
@@ -55,35 +55,35 @@ function global:VEW_RunInSubProcess {
 ######### Global Hooks #########################################################
 
     $PreMakeVirtualEnvHook = {
-        VEW_RunInSubProcess (join-path $global:VirtualenvWrapperHookDir 'VEW_PreMakeVirtualEnv.ps1')
+        VEW_RunInSubProcess (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR 'VEW_PreMakeVirtualEnv.ps1')
     }
 
     $PostMakeVirtualEnvHook = {
-        & (join-path $global:VirtualenvWrapperHookDir 'VEW_PostMakeVirtualEnv.ps1')
+        & (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR 'VEW_PostMakeVirtualEnv.ps1')
     }
 
     $PreRemoveVirtualEnvHook = {
-        VEW_RunInSubProcess (join-path $global:VirtualenvWrapperHookDir 'VEW_PreRemoveVirtualEnv.ps1')
+        VEW_RunInSubProcess (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR 'VEW_PreRemoveVirtualEnv.ps1')
     }
 
     $PostRemoveVirtualEnvHook = {
-        VEW_RunInSubProcess (join-path $global:VirtualenvWrapperHookDir 'VEW_PostRemoveVirtualEnv.ps1')
+        VEW_RunInSubProcess (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR 'VEW_PostRemoveVirtualEnv.ps1')
     }
 
     $PreActivateVirtualEnvHook = {
-        VEW_RunInSubProcess (join-path $global:VirtualenvWrapperHookDir 'VEW_PreActivateVirtualEnv.ps1')
+        VEW_RunInSubProcess (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR 'VEW_PreActivateVirtualEnv.ps1')
     }
 
     $PostActivateVirtualEnvHook = {
-        & (join-path $global:VirtualenvWrapperHookDir 'VEW_PostActivateVirtualEnv.ps1')
+        & (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR 'VEW_PostActivateVirtualEnv.ps1')
     }
 
     $PreDeactivateVirtualEnvHook = {
-        & (join-path $global:VirtualenvWrapperHookDir 'VEW_PreDeactivateVirtualEnv.ps1')
+        & (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR 'VEW_PreDeactivateVirtualEnv.ps1')
     }
 
     $PostDeactivateVirtualEnvHook = {
-        & (join-path $global:VirtualenvWrapperHookDir 'VEW_PostDeactivateVirtualEnv.ps1')
+        & (join-path $global:VIRTUALENVWRAPPER_HOOK_DIR 'VEW_PostDeactivateVirtualEnv.ps1')
     }
 
 # =============================================================================

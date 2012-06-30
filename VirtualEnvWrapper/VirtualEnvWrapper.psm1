@@ -34,13 +34,15 @@ if (-not $VIRTUALENVWRAPPER_VIRTUALENV)
     $global:VIRTUALENVWRAPPER_VIRTUALENV = 'virtualenv.exe'
 }
 
+# todo(guillermo): add VIRTUALENVWRAPPER_VIRTUALENV_ARGS variable
+
 # We'll store global hooks here.
-if (-not (test-path variable:VirtualEnvWrapperHookDir)) {
-    $global:VirtualEnvWrapperHookDir = $env:WORKON_HOME
+if (-not (test-path variable:VIRTUALENVWRAPPER_HOOK_DIR)) {
+    $global:VIRTUALENVWRAPPER_HOOK_DIR = $env:WORKON_HOME
 }
-elseif (-not (test-path $VirtualEnvWrapperHookDir)) {
-    write-warning -message "Can't find path '$VirtualEnvWrapperHookDir' (`$VirtualEnvWrapperHookDir). Defaulting to `$env:WORKON_HOME."
-    $global:VirtualEnvWrapperHookDir = $env:WORKON_HOME
+elseif (-not (test-path $VIRTUALENVWRAPPER_HOOK_DIR)) {
+    write-warning -message "Can't find path '$VIRTUALENVWRAPPER_HOOK_DIR' (`$VIRTUALENVWRAPPER_HOOK_DIR). Defaulting to `$env:WORKON_HOME."
+    $global:VIRTUALENVWRAPPER_HOOK_DIR = $env:WORKON_HOME
 }
 
 # TODO: Implement this.

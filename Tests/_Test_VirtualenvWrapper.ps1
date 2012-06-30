@@ -2,7 +2,7 @@ $setUpTestSuite = {
     param($logic)
 
     $_oldWORKON_HOME = $env:WORKON_HOME
-    $_oldVirtualEnvWrapperHookDir = $VirtualenvWrapperHookDir
+    $_oldVIRTUALENVWRAPPER_HOOK_DIR = $VIRTUALENVWRAPPER_HOOK_DIR
 
     import-module "./../virtualenvwrapper/virtualenvwrapper.psm1"
 
@@ -14,9 +14,9 @@ $setUpTestSuite = {
     remove-item function:VEW_RunInSubProcess
 
     remove-item env:WORKON_HOME -erroraction "SilentlyContinue"
-    remove-item variable:VirtualenvWrapperHookDir -erroraction "SilentlyContinue"
+    remove-item variable:VIRTUALENVWRAPPER_HOOK_DIR -erroraction "SilentlyContinue"
     if ($_oldWORKON_HOME) { $env:WORKON_HOME = $_oldWORKON_HOME }
-    if ($_oldVirtualEnvWrapperHookDir) { $global:VirtualEnvWrapperHookDir = $_oldVirtualEnvWrapperHookDir }
+    if ($_oldVIRTUALENVWRAPPER_HOOK_DIR) { $global:VIRTUALENVWRAPPER_HOOK_DIR = $_oldVIRTUALENVWRAPPER_HOOK_DIR }
 }
 
 $TestCase_Foo = {
