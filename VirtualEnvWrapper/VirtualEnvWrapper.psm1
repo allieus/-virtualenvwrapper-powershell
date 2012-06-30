@@ -48,7 +48,7 @@ elseif (-not (test-path $VIRTUALENVWRAPPER_HOOK_DIR)) {
 # TODO: Implement this.
 if (-not $VIRTUALENVWRAPPER_LOG_DIR)
 {
-    $env:VIRTUALENVWRAPPER_LOG_DIR = $env:WORKON_HOME
+    $global:VIRTUALENVWRAPPER_LOG_DIR = $env:WORKON_HOME
 }
 
 
