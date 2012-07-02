@@ -17,20 +17,17 @@ Switch-DefaultPython
 
 # make sure there is a default value for WORKON_HOME
 # you can override this setting in your PoSh profile.
-if (-not $env:WORKON_HOME)
-{
+if (-not $env:WORKON_HOME) {
     $env:WORKON_HOME = "$HOME/.virtualenvs"
 }
 
 # locate the global python where virtualenvwrapper is installed
-if (-not $VIRTUALENVWRAPPER_PYTHON)
-{
+if (-not $VIRTUALENVWRAPPER_PYTHON) {
     $global:VIRTUALENVWRAPPER_PYTHON = @(get-command python.exe)[0].definition
 }
 
 # TODO: Implement this.
-if (-not $VIRTUALENVWRAPPER_VIRTUALENV)
-{
+if (-not $VIRTUALENVWRAPPER_VIRTUALENV) {
     $global:VIRTUALENVWRAPPER_VIRTUALENV = 'virtualenv.exe'
 }
 
@@ -46,8 +43,7 @@ elseif (-not (test-path $VIRTUALENVWRAPPER_HOOK_DIR)) {
 }
 
 # TODO: Implement this.
-if (-not $VIRTUALENVWRAPPER_LOG_DIR)
-{
+if (-not $VIRTUALENVWRAPPER_LOG_DIR) {
     $global:VIRTUALENVWRAPPER_LOG_DIR = $env:WORKON_HOME
 }
 
@@ -66,30 +62,23 @@ function New-VirtualEnvironment
         VerifyVirtualEnv
     }
     catch [System.IO.IOException] {
-        throw($_)
+        throw
     }
 
     [string] $envName = $Name
 
     push-location $env:WORKON_HOME
-        & "virtualenv.exe" $Name $args $global:VIRTUALENVWRAPPER_VIRTUALENV_ARGS
+        & $global:VIRTUALENVWRAPPER_VIRTUALENV $Name $global:VIRTUALENVWRAPPER_VIRTUALENV_ARGS
     pop-location
 
     # If they passed a help option or got an error from virtualenv,
     # the environment won't exist.  Use that to tell whether
     # we should switch to the environment and run the hook.
-    if ($envName -and (test-path -lit "$ENV:WORKON_HOME/$envName"))
-    {
-        # On Windows, the bin dir doesn't have too much sense, but it might be
-        # required for plugins.
-        # new-item -item d "$ENV:WORKON_HOME/$EnvNameame/bin" > $null
+    if ($envName -and (test-path -lit "$ENV:WORKON_HOME/$envName")) {
         [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PreMakeVirtualEnv' -EventArguments $envName)
-        # RunHook "pre_mkvirtualenv" "$envName"
-        # This is specific to this version of virtualenvwrapper
         add_posh_to_virtualenv "$ENV:WORKON_HOME/$envName"
         workon $envName
         [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PostMakeVirtualEnv')
-        # RunHook "post_mkvirtualenv"
     }
 }
 
@@ -149,7 +138,7 @@ function Get-VirtualEnvironment
         VerifyWorkonHome
     }
     catch [System.IO.IOException] {
-        throw($_)
+        throw
     }
     # get-childitem "$env:workon_home/*/scripts/activate.ps1" | `
     #             foreach-object { split-path "$((split-path $_ -parent))/.." -leaf }
@@ -164,20 +153,19 @@ function Set-VirtualEnvironment
 {
     $env_name = "$args"
 
+     if (-not([bool]$env_name)) {
+        throw("You must specify a virtual environment name.")
+    }
+
     try {
         VerifyWorkonHome
         VerifyWorkonEnvironment $env_name
     }
     catch [System.IO.IOException] {
-        throw($_)
+        throw
     }
 
     switch ( $true ) {
-
-        ( [bool]!$env_name ) {
-
-            throw("You must specify a virtual environment name.")
-        }
         default {
 
             $activate = get-item "$env:WORKON_HOME/$env_name/scripts/activate.ps1" -errora silentlycontinue
@@ -199,11 +187,8 @@ function Set-VirtualEnvironment
             }
 
             [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PreActivateVirtualEnv' -EventArguments $env_name)
-            # RunHook "pre_activate" "$env_name"
-
             & $activate
             [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PostActivateVirtualEnv')
-            # RunHook "post_activate"
         }
     }
 }
@@ -294,12 +279,10 @@ function Copy-VirtualEnvironment
 
 function workon
 {
-    if ("$args")
-    {
+    if ("$args") {
         Set-VirtualEnvironment "$args"
     }
-    else
-    {
+    else {
         Get-VirtualEnvironment
     }
 }
