@@ -169,9 +169,8 @@ function Set-VirtualEnvironment
         default {
 
             $activate = get-item "$env:WORKON_HOME/$env_name/scripts/activate.ps1" -errora silentlycontinue
-
-            if ($activate -and -not (test-path $activate))
-            {
+            # todo: this doesn't seem to be necessary
+            if ($activate -and -not (test-path $activate)) {
                 write-warning "ERROR: Environment '$env:WORKON_HOME/$env_name' does not contain an activate script."
                 return
             }
@@ -180,8 +179,7 @@ function Set-VirtualEnvironment
             # before switching so we use our override function,
             # if it exists.
             # Fall back on .bat file??
-            if (get-command deactivate -type function -errora silentlycontinue)
-            {
+            if (get-command deactivate -type function -errora silentlycontinue) {
                 # this won't happen unless ps scripts are available to activate/deactivate
                 deactivate
             }
