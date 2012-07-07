@@ -168,7 +168,8 @@ function Format-TestResult {
 function Invoke-TestSuite {
     param($SourceFileName,
           $TestSuite,
-          $Environ=$null
+          $Environ=$null,
+          $FilterTestName="*"
     )
 
     $source = "[$SourceFileName]::$($TestSuite.Name)::"
@@ -192,6 +193,9 @@ function Invoke-TestSuite {
     }
 
     foreach ($t in @($tests)) {
+        if ($t.name -notlike $FilterTestName) {
+            continue
+        }
         $theLogic = {
             $STOPWATCH.start()
             try {
@@ -223,7 +227,9 @@ function Invoke-TestSuite {
 
 
 function Invoke-PowerTest {
-    param([System.Collections.HashTable]$TestCollection)
+    param([System.Collections.HashTable]$TestCollection,
+          [string]$FilterTestCase="*",
+          [string]$FilterTestName="*")
     process {
         foreach ($keyValuePair in $TestCollection.GetEnumerator()) {
 
@@ -234,6 +240,9 @@ function Invoke-PowerTest {
             write-debug "Invoking test cases in: $($keyValuePair.Key) ($($keyValuePair.Value.Length))"
             foreach ($testSuite in $keyValuePair.Value[1])
             {
+                if ($testSuite.name -notlike $FilterTestCase) {
+                    continue
+                }
                 $testSuiteEnvironment = $keyValuePair.Value[0].Value
                 if (-not $testSuiteEnvironment) {
                     $testSuiteEnvironment = {
@@ -244,7 +253,8 @@ function Invoke-PowerTest {
 
                 $logic = { Invoke-TestSuite -SourceFileName $keyValuePair.key `
                                             -TestSuite $testSuite `
-                                            -Environ $keyValuePair.Value[0].Value }
+                                            -Environ $keyValuePair.Value[0].Value `
+                                            -FilterTestName $FilterTestName }
                 & $testSuiteEnvironment $logic
             }
         }
@@ -275,7 +285,8 @@ function Get-PowerTest {
 # Main program for test discovery
 #==============================================================================
 function Run-Test {
-    param($Path=(Get-Location), $Filter="Test*.ps1")
+    param($Path=(Get-Location), $Filter="Test*.ps1", $FilterTestCase="*",
+          $FilterTestName="*")
 
     try {
 
@@ -299,7 +310,9 @@ function Run-Test {
             return
         }
 
-        $testResults = Invoke-PowerTest -TestCollection $testCollection
+        $testResults = Invoke-PowerTest -TestCollection $testCollection `
+                                        -FilterTestCase $FilterTestCase `
+                                        -FilterTestName $FilterTestName
         Format-TestResult -TestResult $testResults
 
     }
