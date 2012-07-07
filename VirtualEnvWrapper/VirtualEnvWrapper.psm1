@@ -84,8 +84,7 @@ function New-VirtualEnvironment
 
 function Remove-VirtualEnvironment
 {
-    if (!$args)
-    {
+    if (!$args) {
         throw("You must specify a virtual environment name.")
     }
 
@@ -98,24 +97,20 @@ function Remove-VirtualEnvironment
         throw($_)
     }
 
-    if (-not (test-path "$env:WORKON_HOME/$env_name"))
-    {
+    if (-not (test-path "$env:WORKON_HOME/$env_name")) {
         throw("The specified environment `"$env_name`" does not exist.")
     }
 
     $env_dir = resolve-path "$env:WORKON_HOME/$env_name" -erroraction silentlycontinue
 
-    if (-not "$env:VIRTUAL_ENV")
-    {
+    if (-not "$env:VIRTUAL_ENV") {
         $curr_env = ""
     }
-    else
-    {
+    else {
         $curr_env = resolve-path "$env:VIRTUAL_ENV" -erroraction silentlycontinue
     }
 
-    if ($env_dir.path -eq $curr_env.path)
-    {
+    if ($env_dir.path -eq $curr_env.path) {
         throw(
             Concat "ERROR: You cannot remove the active environment ('$env_name')." `
                    "Either switch to another environment, or run 'deactivate'."
@@ -289,8 +284,7 @@ function toggleglobasitepackages {
 }
 
 
-# XXX: THIS IS WRONG, but I can't make it work otherwise.
-# Also, Import-Module -prefix PREFIX_ breaks aliases! What's the point, then?
+# Import-Module -prefix PREFIX_ breaks aliases.
 # =============================================================================
 # Public interface
 # =============================================================================
@@ -313,6 +307,10 @@ export-modulemember -function "Set-VirtualEnvironment"
 export-modulemember -function "Get-VirtualEnvironment"
 export-modulemember -function "workon"
 export-modulemember -function "mktmpenv"
+export-modulemember -function "showvirtualenv"
+export-modulemember -function "add2virtualenv"
+export-modulemember -function "toggleglobasitepackages"
+
 
 # Conditionally export additional stuff so that we can test it.
 if ($args -and $args[0] -eq "TESTING")
