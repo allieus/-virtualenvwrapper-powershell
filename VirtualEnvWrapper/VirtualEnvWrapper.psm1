@@ -269,6 +269,26 @@ function workon
 }
 
 
+function mktmpenv {
+    throw(new-object "System.NotImplementedException")
+}
+
+
+function showvirtualenv {
+    throw(new-object "System.NotImplementedException")
+}
+
+
+function add2virtualenv {
+    throw(new-object "System.NotImplementedException")
+}
+
+
+function toggleglobasitepackages {
+    throw(new-object "System.NotImplementedException")
+}
+
+
 # XXX: THIS IS WRONG, but I can't make it work otherwise.
 # Also, Import-Module -prefix PREFIX_ breaks aliases! What's the point, then?
 # =============================================================================
@@ -278,7 +298,7 @@ new-alias -name "cdsitepackages"    -value "CDIntoSitePackages"
 new-alias -name "cdvirtualenv"      -value "CDIntoVirtualEnvironment"
 new-alias -name "cpvirtualenv"      -value "Copy-VirtualEnvironment"
 new-alias -name "lssitepackages"    -value "GetSitePackages"
-# new-alias -name "lsvirtualenv"      -value "GetVirtualEnvironments"
+new-alias -name "lsvirtualenv"      -value "Get-VirtualEnvironment"
 new-alias -name "mkvirtualenv"      -value "New-VirtualEnvironment"
 new-alias -name "rmvirtualenv"      -value "Remove-VirtualEnvironment"
 # =============================================================================
@@ -287,12 +307,12 @@ export-modulemember -function "CDIntoSitePackages"
 export-modulemember -function "CDIntoVirtualEnvironment"
 export-modulemember -function "Copy-VirtualEnvironment"
 export-modulemember -function "GetSitePackages"
-# export-modulemember -function "GetVirtualEnvironments"
 export-modulemember -function "New-VirtualEnvironment"
 export-modulemember -function "Remove-VirtualEnvironment"
 export-modulemember -function "Set-VirtualEnvironment"
 export-modulemember -function "Get-VirtualEnvironment"
 export-modulemember -function "workon"
+export-modulemember -function "mktmpenv"
 
 # Conditionally export additional stuff so that we can test it.
 if ($args -and $args[0] -eq "TESTING")
@@ -305,6 +325,7 @@ export-modulemember -alias "cdsitepackages"
 export-modulemember -alias "cdvirtualenv"
 export-modulemember -alias "cpvirtualenv"
 export-modulemember -alias "lssitepackages"
+export-modulemember -alias "lsvirtualenv"
 export-modulemember -alias "mkvirtualenv"
 export-modulemember -alias "rmvirtualenv"
 
