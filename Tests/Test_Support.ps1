@@ -1,17 +1,18 @@
 $setUpTestSuite = {
     param($logic)
 
+    . "./Utils.For.Testing.ps1"
+
     $_oldWORKON_HOME = $env:WORKON_HOME
     $_oldVIRTUALENVWRAPPER_HOOK_DIR = $VIRTUALENVWRAPPER_HOOK_DIR
-    $_oldVirtualEnvWrapperVirtualeEnv = $global:VIRTUALENVWRAPPER_VIRTUALENV
+    $_oldVirtualEnvWrapperVirtualeEnv = $VIRTUALENVWRAPPER_VIRTUALENV
 
     import-module "./../virtualenvwrapper/support.psm1"
 
     & $logic
 
-    remove-module "support"
-    unregister-event "virtualenvwrapper.*"
-    remove-event "virtualenvwrapper.*"
+    get-module | remove-module
+    _RemoveVirtualEnvWrapperEvents
 
     remove-item env:WORKON_HOME -erroraction "SilentlyContinue"
     remove-item variable:VIRTUALENVWRAPPER_HOOK_DIR -erroraction "SilentlyContinue"
@@ -25,7 +26,6 @@ $TestCase_VerifyFunctions = {
         remove-item variable:VIRTUALENVWRAPPER_VIRTUALENV -erroraction "SilentlyContinue"
         try {
             VerifyVirtualEnv
-            set-psdebug -Step
             $false
         }
         catch {
@@ -125,22 +125,26 @@ $TestCase_VerifyFunctions = {
 $TestCase_LooksLikeAVirtualEnv = {
     $setUpTestCase = {
         param($Logic)
-        $target_1 = "$env:TEMP/VirtualenvWrapperTests/FOO/Scripts/activate.ps1"
-        $target_2 = "$env:TEMP/VirtualenvWrapperTests/BAR/Scripts/"
-        [void] (new-item -itemtype "f" -path $target_1 -force)
-        [void] (new-item -itemtype "d" -path $target_2 -force)
+
+        $fakeWorkonHome = _MakeFakeWorkonHome "PowerTestTests"
+        _MakeFakeVirtualEnvironment -Name "FOO" -WorkonHome $fakeWorkonHome
+        _MakeFakeVirtualEnvironment -Name "BAR" -WorkonHome $fakeWorkonHome
+        $env:WORKON_HOME = $fakeWorkonHome
+        remove-item "$fakeWorkonHome/BAR/Scripts/activate.ps1"
 
         & $Logic
 
-        remove-item "$env:TEMP/VirtualenvWrapperTests" -recurse -force
+        remove-item $fakeWorkonHome -recurse
     }
 
     $test_SucceedsWhenItsSupposedTo = {
-         get-item "$env:TEMP/VirtualenvWrapperTests/FOO" | LooksLikeAVirtualenv
+         $path = (get-item "$env:WORKON_HOME/FOO" | LooksLikeAVirtualenv)
+         $path.fullname -eq (get-item "$env:WORKON_HOME/FOO").fullname
     }
 
     $test_FailWhenItsSupposedTo = {
-         get-item "$env:TEMP/VirtualenvWrapperTests/BAR" | LooksLikeAVirtualenv
+         $path = (get-item "$env:WORKON_HOME/BAR" | LooksLikeAVirtualenv)
+         $path -eq $null
     }
 
     makeTestCase
@@ -150,16 +154,16 @@ $TestCase_LooksLikeAVirtualEnv = {
 $TestCase_GetVirtualEnvData = {
     $setUpTestCase = {
         param($Logic)
-        $target_1 = "$env:TEMP/VirtualenvWrapperTests/FOO/Scripts/activate.ps1"
-        $target_2 = "$env:TEMP/VirtualenvWrapperTests/BAR/Scripts/"
-        [void] (new-item -itemtype "f" -path $target_1 -force)
-        [void] (new-item -itemtype "d" -path $target_2 -force)
 
-        $env:WORKON_HOME = "$env:TEMP/VirtualenvWrapperTests"
+        $fakeWorkonHome = _MakeFakeWorkonHome "PowerTestTests"
+        _MakeFakeVirtualEnvironment -Name "FOO" -WorkonHome $fakeWorkonHome
+        _MakeFakeVirtualEnvironment -Name "BAR" -WorkonHome $fakeWorkonHome
+        $env:WORKON_HOME = $fakeWorkonHome
+        remove-item "$fakeWorkonHome/BAR/Scripts/activate.ps1"
 
         & $Logic
 
-        remove-item "$env:TEMP/VirtualenvWrapperTests" -recurse -force
+        remove-item $fakeWorkonHome -recurse
     }
 
     $test_SucceedsWhenItsSupposedTo = {
@@ -175,16 +179,18 @@ $TestCase_GetVirtualEnvData = {
 $TestCase_NewVirtualEnvData = {
     $setUpTestCase = {
         param($Logic)
-        $target_1 = "$env:TEMP/VirtualenvWrapperTests/FOO/Scripts/activate.ps1"
-        $target_2 = "$env:TEMP/VirtualenvWrapperTests/BAR/Scripts/"
+
+        $fakeWorkonHome = _MakeFakeWorkonHome "PowerTestTests"
+        _MakeFakeVirtualEnvironment -Name "FOO" -WorkonHome $fakeWorkonHome
+        _MakeFakeVirtualEnvironment -Name "BAR" -WorkonHome $fakeWorkonHome
+        $env:WORKON_HOME = $fakeWorkonHome
+        remove-item "$fakeWorkonHome/BAR/Scripts/activate.ps1"
         $target_3 = "$env:TEMP/VirtualenvWrapperTests/FOO/lib/site-packages"
-        [void] (new-item -itemtype "f" -path $target_1 -force)
-        [void] (new-item -itemtype "d" -path $target_2 -force)
         [void] (new-item -itemtype "d" -path $target_3 -force)
 
         & $Logic
 
-        remove-item "$env:TEMP/VirtualenvWrapperTests" -recurse -force
+        remove-item $fakeWorkonHome -recurse
     }
 
     $test_ProduceData = {
@@ -202,9 +208,8 @@ $TestCase_NewVirtualEnvData = {
 $TestCase_Initialize = {
     $setUpTestCase = {
         param($Logic)
-        $target_1 = "$env:TEMP/VirtualenvWrapperTests/"
-        [void] (new-item -itemtype "d" -path $target_1 -force)
 
+        $fakeWorkonHome = _MakeFakeWorkonHome "VirtualenvWrapperTests"
         remove-item alias:cdproject -erroraction "SilentlyContinue"
         remove-item alias:mkproject -erroraction "SilentlyContinue"
         remove-item alias:setvirtualenvproject -erroraction "SilentlyContinue"
@@ -212,7 +217,7 @@ $TestCase_Initialize = {
         Initialize
         & $Logic
 
-        remove-item "$env:TEMP/VirtualenvWrapperTests" -recurse -force
+        remove-item $fakeWorkonHome
     }
 
     $test_Initialize = {
@@ -221,7 +226,8 @@ $TestCase_Initialize = {
     }
 
     $test_ThatExtensionsAreLoaded = {
-        # virtualenvwrapper will load extenions when Initialize runs.
+        # Virtualenvwrapper will load extenions when Initialize runs. Test
+        # that it is so.
         test-path alias:mkproject
         test-path alias:cdproject
     }
