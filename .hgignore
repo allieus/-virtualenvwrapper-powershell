@@ -22,6 +22,9 @@ virtualenvwrapper/docs
 *.sublime-project
 *.sublime-workspace
 
+tags
+tags_sorted_by_file
+
 _*.txt
 
 syntax: re
