@@ -66,7 +66,6 @@ function New-VirtualEnvironment
     }
 
     [string] $envName = $Name
-
     push-location $env:WORKON_HOME
         & $global:VIRTUALENVWRAPPER_VIRTUALENV $Name $global:VIRTUALENVWRAPPER_VIRTUALENV_ARGS
     pop-location
@@ -145,14 +144,12 @@ function Get-VirtualEnvironment
     GetVirtualEnvData
 }
 
-# List or change working virtual environments
-#
-# Usage: workon [environment_name]
-#
 function Set-VirtualEnvironment
+<# .DESCRIPTION
+    Activates a virtual environment.
+#>
 {
     $env_name = "$args"
-
      if (-not([bool]$env_name)) {
         throw("You must specify a virtual environment name.")
     }
@@ -165,30 +162,16 @@ function Set-VirtualEnvironment
         throw
     }
 
-    switch ( $true ) {
-        default {
-
-            $activate = get-item "$env:WORKON_HOME/$env_name/scripts/activate.ps1" -errora silentlycontinue
-            # todo: this doesn't seem to be necessary
-            if ($activate -and -not (test-path $activate)) {
-                write-warning "ERROR: Environment '$env:WORKON_HOME/$env_name' does not contain an activate script."
-                return
-            }
-
-            # Deactivate any current environment "destructively"
-            # before switching so we use our override function,
-            # if it exists.
-            # Fall back on .bat file??
-            if (get-command deactivate -type function -errora silentlycontinue) {
-                # this won't happen unless ps scripts are available to activate/deactivate
-                deactivate
-            }
-
-            [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PreActivateVirtualEnv' -EventArguments $env_name)
-            & $activate
-            [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PostActivateVirtualEnv')
-        }
+    $activate = get-item "$env:WORKON_HOME/$env_name/scripts/activate.ps1" -errora silentlycontinue
+    # Deactivate any current environment "destructively" before switching
+    # using our override function, if it exists.
+    if (get-command "deactivate" -type function -erroraction "silentlycontinue") {
+        deactivate
     }
+
+    [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PreActivateVirtualEnv' -EventArguments $env_name)
+    & $activate
+    [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PostActivateVirtualEnv')
 }
 
 

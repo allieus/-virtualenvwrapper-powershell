@@ -211,4 +211,12 @@ $TestCase_SetVirtualEnvironment = {
     makeTestCase
 }
 
+
+$TestCase_MakeVirtualenv = {
+    $test_CanMakeVirtualenv = {
+        # todo: test we can create a virtual environment
+    }
+    makeTestCase
+}
+
 makeTestSuite
