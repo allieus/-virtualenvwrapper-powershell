@@ -4,7 +4,7 @@
 PROJECT = 'virtualenvwrapper-powershell'
 
 # YY.M.D[a-z]
-VERSION = '12.1.1a'
+VERSION = '12.7.7'
 
 # Bootstrap installation of Distribute
 import distribute_setup
@@ -155,7 +155,7 @@ def find_package_data(
 
     Note patterns use wildcards, or can be exact paths (including
     leading ``./``), and all searching is case-insensitive.
-    
+
     This function is by Ian Bicking.
     """
 
@@ -203,15 +203,15 @@ def find_package_data(
                 out.setdefault(package, []).append(prefix+name)
     return out
 ################################################################################
-    
+
 
 setup(
     name = PROJECT,
     version = VERSION,
-    
+
     description = "Enhancements to virtualenv (for Windows). A clone of Doug Hellmann's virtualenvwrapper",
     long_description = long_description,
-    
+
     author = 'Guillermo López',
     author_email = 'guilan70@hotmail.com',
 
@@ -235,9 +235,9 @@ setup(
     # packages = find_packages(),
     include_package_data = True,
     # Scan the input for package information
-    # to grab any data files (text, images, etc.) 
+    # to grab any data files (text, images, etc.)
     # associated with sub-packages.
-    # package_data = find_package_data(PROJECT, 
+    # package_data = find_package_data(PROJECT,
     #                                  package=PROJECT,
     #                                  only_in_packages=False,
     #                                  ),
