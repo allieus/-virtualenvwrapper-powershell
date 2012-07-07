@@ -157,18 +157,21 @@ $TestCase_SetVirtualEnvironment = {
     }
 
     $test_ActivatingVirtualEnvFiresEvents = {
+        # todo: this test fails intermitently
         [void] (new-item -itemtype "f" -path "$env:TEMP/PowerTestTests/FOO/Scripts/activate.ps1" -force)
         $env:WORKON_HOME = "$env:TEMP/PowerTestTests"
         $VIRTUALENVWRAPPER_HOOK_DIR = $env:WORKON_HOME
 
-        import-module "../virtualenvwrapper"
+        [void] (import-module "../virtualenvwrapper")
+        [void] (unregister-event "virtualenvwrapper.*")
+        [void] (remove-job -name "virtualenvwrapper.*")
 
-        unregister-event "virtualenvwrapper.*"
-        set-Virtualenvironment "foo"
+        [void] (set-Virtualenvironment "foo")
 
-        (get-event -sourceidentifier "Virtualenvwrapper.PreActivateVirtualEnv").count -gt 0
-        (get-event -sourceidentifier "Virtualenvwrapper.PostActivateVirtualEnv").count -gt 0
+        @(get-event -sourceidentifier "Virtualenvwrapper.PreActivateVirtualEnv").count -eq 1
+        @(get-event -sourceidentifier "Virtualenvwrapper.PostActivateVirtualEnv").count -eq 1
 
+        remove-event "virtualenvwrapper.*"
         remove-item "$env:TEMP/PowerTestTests" -recurse
         remove-module "virtualenvwrapper"
     }
@@ -193,7 +196,10 @@ $TestCase_SetVirtualEnvironment = {
         [void] (new-item -itemtype "f" -path "$env:TEMP/PowerTestTests/FOO/Scripts/activate.ps1" -force)
         $env:WORKON_HOME = "$env:TEMP/PowerTestTests"
         $VIRTUALENVWRAPPER_HOOK_DIR = $env:WORKON_HOME
-        import-module "../virtualenvwrapper"
+
+        [void] (import-module "../virtualenvwrapper")
+        [void] (unregister-event "virtualenvwrapper.*")
+        [void] (remove-job -name "virtualenvwrapper.*")
 
         register-engineevent -sourceidentifier "virtualenvwrapper.PreActivateVirtualEnv" -action { new-item -itemtype "f" "$env:WORKON_HOME/xxx.txt" }
         register-engineevent -sourceidentifier "virtualenvwrapper.PostActivateVirtualEnv" -action { new-item -itemtype "f" "$env:WORKON_HOME/yyy.txt" }
@@ -211,10 +217,29 @@ $TestCase_SetVirtualEnvironment = {
     makeTestCase
 }
 
-
 $TestCase_MakeVirtualenv = {
     $test_CanMakeVirtualenv = {
-        # todo: test we can create a virtual environment
+        [void] (new-item -itemtype "d" -path "$env:TEMP/PowerTestTests/" -force)
+        $env:WORKON_HOME = "$env:TEMP/PowerTestTests"
+        $VIRTUALENVWRAPPER_HOOK_DIR = $env:WORKON_HOME
+
+        [void] (import-module "../virtualenvwrapper")
+        # Due to async issues, if we don't unregister events, VIRTUALENVWRAPPER_HOOK_DIR
+        # will have been reset to the original one by the time some events trigger. This is not
+        # what we want during testing.
+        [void] (unregister-event "virtualenvwrapper.*")
+        [void] (remove-job "virtualenvwrapper.*")
+
+        [void] (new-virtualenvironment "foo")
+
+        test-path function:deactivate
+
+        [void] (deactivate)
+
+        test-path "$env:WORKON_HOME/foo"
+
+        remove-item "$env:TEMP/PowerTestTests" -recurse -force
+        remove-module "virtualenvwrapper"
     }
     makeTestCase
 }
