@@ -118,10 +118,8 @@ function Remove-VirtualEnvironment
     }
 
     [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PreRemoveVirtualEnv' -EventArguments $env_name)
-    # RunHook "pre_rmvirtualenv" "$env_name"
     remove-item $env_dir -rec
     [void] (New-Event -SourceIdentifier 'VirtualenvWrapper.PostRemoveVirtualEnv'-EventArguments $env_name)
-    # RunHook "post_rmvirtualenv" "$env_name"
 }
 
 
