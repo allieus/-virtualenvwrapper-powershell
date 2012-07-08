@@ -4,7 +4,7 @@
 PROJECT = 'virtualenvwrapper-powershell'
 
 # YY.M.D[a-z]
-VERSION = '12.7.7'
+VERSION = '12.7.8'
 
 # Bootstrap installation of Distribute
 import distribute_setup
