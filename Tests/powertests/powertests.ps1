@@ -296,7 +296,9 @@ function Run-Test {
 
         $global:_capturedOutput = @()
         function write-host { $global:_capturedOutput += $args }
-        function write-error { $global:_capturedOutput += $args }
+        # TODO: capturing stderr is problematic when tests need to check for
+        # errors.
+        # function write-error { $global:_capturedOutput += $args }
 
         if (!((test-path $path) -and (get-item $path).PSIsContainer)) {
             $host.ui.writeerrorline("Cannot find specified path or it isn't a directory.")
