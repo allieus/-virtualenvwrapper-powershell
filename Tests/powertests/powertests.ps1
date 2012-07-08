@@ -98,10 +98,10 @@ function FormatTestsWithErrors {
             $errRecord = $err.testcase.ErrorRecord
         }
 
-        $host.ui.writeerrorline("ERROR: {0}[{1}:{2}]" -f
+        $host.ui.writeerrorline(("ERROR: {0}[{1}:{2}]" -f
                                                 $errRecord.invocationinfo.scriptname,
                                                 $errRecord.invocationinfo.scriptlinenumber,
-                                                $errRecord.invocationinfo.offsetinline)
+                                                $errRecord.invocationinfo.offsetinline))
         $host.ui.writeline($err.testcase)
         $host.ui.writeline($errRecord.invocationinfo.line)
     }
