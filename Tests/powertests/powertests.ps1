@@ -75,12 +75,12 @@ function FormatFailedTests {
     param($failedTests)
 
     foreach ($fail in $failedTests) {
-        write-host -foreground "DarkYellow" ("FAILED: {0}{1}[{2}:{3}]" -f
+        $host.ui.writeline(("FAILED: {0}{1}[{2}:{3}]" -f
                                                 $fail.source,
                                                 $fail.testcase.Name,
                                                 $fail.testcase.value.startposition.startline,
-                                                $fail.testcase.value.startposition.startcolumn)
-        write-host $fail.testcase.value
+                                                $fail.testcase.value.startposition.startcolumn))
+        $host.ui.writeline($fail.testcase.value)
     }
 }
 
@@ -98,12 +98,12 @@ function FormatTestsWithErrors {
             $errRecord = $err.testcase.ErrorRecord
         }
 
-        write-host -foreground "DarkRed" ("ERROR: {0}[{1}:{2}]" -f
+        $host.ui.writeerrorline("ERROR: {0}[{1}:{2}]" -f
                                                 $errRecord.invocationinfo.scriptname,
                                                 $errRecord.invocationinfo.scriptlinenumber,
                                                 $errRecord.invocationinfo.offsetinline)
-        write-host $err.testcase
-        write-host $errRecord.invocationinfo.line
+        $host.ui.writeline($err.testcase)
+        $host.ui.writeline($errRecord.invocationinfo.line)
     }
 }
 
@@ -117,7 +117,7 @@ function Format-TestResult {
     $errorTests = @()
     [timespan]$totalTime = 0
 
-    write-host ("`n" + "-"*78) -ForegroundColor "DarkGray" -NoNewline
+    $host.ui.write(("`n" + "-"*78))
 
     # In PS, $null | %{ "foo" } will print "foo". Make sure we don't try
     # to operate on $null.
@@ -133,16 +133,16 @@ function Format-TestResult {
              $TEST_STATUS_PASSED { break }
              default {
                 write-debug "Formatting (default): $($result.status)"
-                write-host -foreground red "You shouldn't be seeing this." }
+                $host.ui.writeerrorline("You shouldn't be seeing this.") }
         }
 
         if (-not $NoNewLineAtEndOfTest) {
-            write-host
+            $host.ui.writeline()
         }
     }
 
     if (-not $NoNewLineAtEnd) {
-        write-host
+        $host.ui.writeline()
     }
 
     if ($failedTests -or $errorTests) {
@@ -153,12 +153,12 @@ function Format-TestResult {
         FormatTestsWithErrors $errorTests
     }
 
-    write-host ("-"*78) -ForegroundColor "DarkGray"
-    write-host "Tests: $($TestResults.length) | " -NoNewline
-    write-host "Failed: $($failedTests.length) | " -NoNewline
-    write-host "Errors: $($errorTests.length) | " -NoNewline
-    write-host "Time: $($totalTime)" -ForegroundColor "Gray"
-    write-host ("="*78) -ForegroundColor "DarkGray"
+    $host.ui.writeline("-"*78)
+    $host.ui.write("Tests: $($TestResults.length) | ")
+    $host.ui.write("Failed: $($failedTests.length) | ")
+    $host.ui.write("Errors: $($errorTests.length) | ")
+    $host.ui.writeline("Time: $($totalTime)")
+    $host.ui.writeline("="*78)
 
 }
 
@@ -179,7 +179,7 @@ function Invoke-TestSuite {
     }
     catch {
         if ($_.FullyQualifiedErrorId -eq "BadExpression") {
-            write-error -message "Can't run test suite. Make sure you are using 'makeTestCase' and 'makeTestSuite' as appropriate."
+            $host.ui.writeerrorline("Can't run test suite. Make sure you are using 'makeTestCase' and 'makeTestSuite' as appropriate.")
             return
         }
         throw $_
@@ -294,19 +294,23 @@ function Run-Test {
         $__moduleNames = @(get-module | select-object -expandproperty "name")
         get-module | remove-module
 
+        $global:_capturedOutput = @()
+        function write-host { $global:_capturedOutput += $args }
+        function write-error { $global:_capturedOutput += $args }
+
         if (!((test-path $path) -and (get-item $path).PSIsContainer)) {
-            write-error -message "Cannot find specified path or it isn't a directory."
+            $host.ui.writeerrorline("Cannot find specified path or it isn't a directory.")
             return
         }
 
         # These events allow to write live feedback about test results.
-        [void] (Register-EngineEvent -SourceIdentifier "PowerTest.Success" -Action { Write-Host "." -ForegroundColor "DarkGreen" -NoNewline })
-        [void] (Register-EngineEvent -SourceIdentifier "PowerTest.Fail"    -Action { Write-Host "F" -ForegroundColor "DarkRed" -NoNewline })
-        [void] (Register-EngineEvent -SourceIdentifier "PowerTest.Error"   -Action { Write-Host "E" -ForegroundColor "Red" -NoNewline })
+        [void] (Register-EngineEvent -SourceIdentifier "PowerTest.Success" -Action { $host.ui.write(".") })
+        [void] (Register-EngineEvent -SourceIdentifier "PowerTest.Fail"    -Action { $host.ui.write("F") })
+        [void] (Register-EngineEvent -SourceIdentifier "PowerTest.Error"   -Action { $host.ui.write("E") })
 
         $testCollection = Get-PowerTest -Path $Path -Filter $Filter
         if ($testCollection.Count -eq 0) {
-            write-error -message "Could not find any files in '$Path' matching '$Filter'."
+            $host.ui.writeerrorline("Could not find any files in '$Path' matching '$Filter'.")
             return
         }
 
@@ -315,9 +319,15 @@ function Run-Test {
                                         -FilterTestName $FilterTestName
         Format-TestResult -TestResult $testResults
 
+        if ($_capturedOutput) {
+            $_capturedOutput
+        }
+
     }
     finally {
         Unregister-Event -SourceIdentifier "PowerTest.*"
         $__moduleNames | import-module
+        remove-item function:write-host
+        remove-item variable:_capturedOutput
     }
 }
