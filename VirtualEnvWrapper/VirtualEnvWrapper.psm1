@@ -31,7 +31,9 @@ if (-not $VIRTUALENVWRAPPER_VIRTUALENV) {
     $global:VIRTUALENVWRAPPER_VIRTUALENV = 'virtualenv.exe'
 }
 
-# todo(guillermo): add VIRTUALENVWRAPPER_VIRTUALENV_ARGS variable
+if (-not $VIRTUALENVWRAPPER_VIRTUALENV_ARGS) {
+    $global:VIRTUALENVWRAPPER_VIRTUALENV_ARGS = ''
+}
 
 # We'll store global hooks here.
 if (-not (test-path variable:VIRTUALENVWRAPPER_HOOK_DIR)) {
