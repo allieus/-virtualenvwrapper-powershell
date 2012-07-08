@@ -1,5 +1,6 @@
-NEXT
+12.7.8
 	* Added $VIRTUALENVWRAPPER_HOOK_DIR customization variable.
+	* Added $VIRTUALENVWRAPPER_ARGS customization variable.
 	* Added tests for the project extension.
 	* Added mkproject alias.
 	* Added setvirtualenvproject alias.
