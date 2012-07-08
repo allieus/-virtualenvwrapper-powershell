@@ -410,10 +410,11 @@ $TestCase_Templates = {
 
     $test_NonExistantTemplate = {
         $VirtualenvWrapperTemplates = "$newWorkonHome"
-        [void] (mkproject -envname "xxx" -templates "foo")
+        $theError = (mkproject -envname "xxx" -templates "foo") 2>&1
 
-         # this is a non-terminating error, so we can't try/catch it.
-         $error[0].exception.message -eq "Template 'foo' not found. Not applying."
+        set-psdebug -Step
+        # this is a non-terminating error, so we can't try/catch it.
+        $theError.exception.message -eq "Template 'foo' not found. Not applying."
     }
 
     $test_Template = {
