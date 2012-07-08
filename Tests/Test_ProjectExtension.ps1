@@ -1,8 +1,7 @@
-# $script:thisDir = split-path $MyInvocation.MyCommand.Path -parent
-# assume we're executing from the Tests directory.
-
 $setUpTestSuite = {
     param($logic)
+
+    . ".\Utils.For.Testing.ps1"
 
     $_oldVirtualEnv = $env:VIRTUAL_ENV
     $_oldWORKON_HOME = $env:WORKON_HOME
@@ -10,32 +9,30 @@ $setUpTestSuite = {
 
     . "./../virtualenvwrapper/extensions/extension.project.ps1"
 
+    $INVALID_DIRNAME = "\:"
+
     & $logic
 
     remove-item alias:cdproject
     remove-item alias:mkproject
     remove-item alias:setvirtualenvproject
-    unregister-event "virtualenvwrapper.*"
+    _RemoveVirtualEnvWrapperEvents
 
     $env:VIRTUAL_ENV = $_oldVirtualEnv
     $env:WORKON_HOME = $_oldWORKON_HOME
-    if ($_oldProjectHome) {
-        $global:ProjectHome = $_oldProjectHome
-    }
-    else {
-        [void] (remove-item variable:ProjectHome -erroraction "SilentlyContinue")
-    }
+    if ($_oldProjectHome) { $global:ProjectHome = $_oldProjectHome }
+    else { [void] (remove-item variable:ProjectHome -erroraction "SilentlyContinue") }
 }
 
 $TestCase_AreAliasAvailable = {
     $test_CdProjectAliasExists = {
         test-path alias:cdproject
         $alias = get-item alias:cdproject
-        $alias.definition -eq "Set-LocationToProject"
+        "$($alias.definition)" -eq "Set-LocationToProject"
     }
 
     $test_MkProjectAliasExists = {(test-path alias:mkproject)}
-    $test_MkProjectAliasExists = {(test-path alias:setvirtualenvproject)}
+    $test_MkSetVirtualEnvProjectAliasExists = {(test-path alias:setvirtualenvproject)}
 
     makeTestCase
 }
@@ -60,7 +57,6 @@ $TestCase_VerifyProjectHome = {
     $test_ProjectHomeVariableIsNotDefined = {
         try {
             [void] (remove-item variable:ProjectHome -erroraction "SilentlyContinue")
-            # todo: isolate test environment; we havent's reset $ProjectHome.
             VEW_Project_VerifyProjectHome
         }
         catch {
@@ -70,15 +66,12 @@ $TestCase_VerifyProjectHome = {
 
     $test_ProjectHomePointsToInvalidDirectory = {
         try {
-            # todo: is this safe as an invalid dir?
-            $ProjectHome = "???:"
-            # todo: isolate test environment; we havent's reset $ProjectHome.
+            $ProjectHome = $INVALID_DIRNAME
             VEW_Project_VerifyProjectHome
         }
         catch {
             $_.Exception.Message -eq "Set `$ProjectHome to an existing directory."
         }
-
     }
 
     makeTestCase
@@ -87,48 +80,45 @@ $TestCase_VerifyProjectHome = {
 $TestCase_SetVirtualEnvProject = {
     $setUpTestCase = {
         param($Logic)
-        # make workon home
-        $newWorkonHome = "$env:TEMP/PowerTestTests/WORKONHOME"
-        $newProjectsHome = "$env:TEMP/PowerTestTests/PROJECTS"
-        [void] (new-item -itemtype "d" -path $newWorkonHome -force)
+
+        $fakeWorkonHome = _MakeFakeWorkonHome "PowerTestTests"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "FOO"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "BAR"
+        $newProjectsHome = "$fakeWorkonHome/PROJECTS"
         [void] (new-item -itemtype "d" -path $newProjectsHome -force)
-        [void] (new-item -itemtype "d" -path "$newWorkonHome/FOO" -force)
-        [void] (new-item -itemtype "d" -path "$newProjectsHome/BAR" -force)
+
+        $env:WORKON_HOME = $fakeWorkonHome
 
         & $Logic
 
-        remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
+        remove-item -path $fakeWorkonHome -recurse
     }
 
     $test_PassingANamedVirtualenv = {
-        # todo supress write-host
-        [void] (set-virtualenvproject -venv "$newWorkonHome/FOO" `
+        [void] (set-virtualenvproject -venv "$env:WORKONHOME/FOO" `
                                       -Project "$newProjectsHome/BAR")
-        test-path "$newWorkonHome/FOO/.project"
-        (get-content "$newWorkonHome/FOO/.project") -eq "$newProjectsHome/BAR"
+        test-path "$env:WORKONHOME/FOO/.project"
+        (get-content "$env:WORKONHOME/FOO/.project") -eq "$newProjectsHome/BAR"
     }
 
     $test_NoNamedVirtualenv = {
-        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
-        # todo supress write-host
+        $env:VIRTUAL_ENV = "$env:WORKONHOME/FOO"
         [void] (set-virtualenvproject -Project "$newProjectsHome/BAR")
-        test-path "$newWorkonHome/FOO/.project"
-        (get-content "$newWorkonHome/FOO/.project") -eq "$newProjectsHome/BAR"
+        test-path "$env:WORKONHOME/FOO/.project"
+        (get-content "$env:WORKONHOME/FOO/.project") -eq "$newProjectsHome/BAR"
 
     }
 
     $test_NoNamedProjectOrVirtualenv = {
-        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
-        # todo supress write-host
+        $env:VIRTUAL_ENV = "$env:WORKONHOME/FOO"
         [void] (set-virtualenvproject)
-        test-path "$newWorkonHome/FOO/.project"
-        (get-content "$newWorkonHome/FOO/.project") -eq (get-location).providerpath
+        test-path "$env:WORKONHOME/FOO/.project"
+        (get-content "$env:WORKONHOME/FOO/.project") -eq (get-location).providerpath
 
     }
 
     $test_CantFindVirtualenv = {
-        $env:VIRTUAL_ENV = "$newWorkonHome/XXX"
-        # todo supress write-host
+        $env:VIRTUAL_ENV = "$env:WORKONHOME/XXX"
         try {
             [void] (set-virtualenvproject)
         }
@@ -136,12 +126,11 @@ $TestCase_SetVirtualEnvProject = {
             $_.exception.message -eq "Can't find virtualenv."
         }
 
-        -not (test-path "$newWorkonHome/XXX/.project")
+        -not (test-path "$env:WORKONHOME/XXX/.project")
     }
 
     $test_CantFindProjectDirectory = {
-        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
-        # todo supress write-host
+        $env:VIRTUAL_ENV = "$env:WORKONHOME/FOO"
         try {
             [void] (set-virtualenvproject -project "$newProjectsHome/XXX")
         }
@@ -149,7 +138,7 @@ $TestCase_SetVirtualEnvProject = {
             $_.exception.message -eq "Can't find project directory."
         }
 
-        -not (test-path "$newWorkonHome/FOO/.project")
+        -not (test-path "$env:WORKONHOME/FOO/.project")
     }
 
     makeTestCase
