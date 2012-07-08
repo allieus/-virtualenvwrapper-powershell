@@ -87,6 +87,7 @@ $TestCase_SetVirtualEnvProject = {
         $newProjectsHome = "$fakeWorkonHome/PROJECTS"
         [void] (new-item -itemtype "d" -path $newProjectsHome -force)
 
+        $ProjectHome = $newProjectsHome
         $env:WORKON_HOME = $fakeWorkonHome
 
         & $Logic
@@ -95,30 +96,30 @@ $TestCase_SetVirtualEnvProject = {
     }
 
     $test_PassingANamedVirtualenv = {
-        [void] (set-virtualenvproject -venv "$env:WORKONHOME/FOO" `
-                                      -Project "$newProjectsHome/BAR")
-        test-path "$env:WORKONHOME/FOO/.project"
-        (get-content "$env:WORKONHOME/FOO/.project") -eq "$newProjectsHome/BAR"
+        [void] (set-virtualenvproject -venv "$env:WORKON_HOME/FOO" `
+                                      -Project "$env:WORKON_HOME/BAR")
+        test-path "$env:WORKON_HOME/FOO/.project"
+        (get-content "$env:WORKON_HOME/FOO/.project") -eq "$env:WORKON_HOME/BAR"
     }
 
     $test_NoNamedVirtualenv = {
-        $env:VIRTUAL_ENV = "$env:WORKONHOME/FOO"
-        [void] (set-virtualenvproject -Project "$newProjectsHome/BAR")
-        test-path "$env:WORKONHOME/FOO/.project"
-        (get-content "$env:WORKONHOME/FOO/.project") -eq "$newProjectsHome/BAR"
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/FOO"
+        [void] (set-virtualenvproject -Project "$env:WORKON_HOME/BAR")
+        test-path "$env:WORKON_HOME/FOO/.project"
+        (get-content "$env:WORKON_HOME/FOO/.project") -eq "$env:WORKON_HOME/BAR"
 
     }
 
     $test_NoNamedProjectOrVirtualenv = {
-        $env:VIRTUAL_ENV = "$env:WORKONHOME/FOO"
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/FOO"
         [void] (set-virtualenvproject)
-        test-path "$env:WORKONHOME/FOO/.project"
-        (get-content "$env:WORKONHOME/FOO/.project") -eq (get-location).providerpath
+        test-path "$env:WORKON_HOME/FOO/.project"
+        (get-content "$env:WORKON_HOME/FOO/.project") -eq (get-location).providerpath
 
     }
 
     $test_CantFindVirtualenv = {
-        $env:VIRTUAL_ENV = "$env:WORKONHOME/XXX"
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/XXX"
         try {
             [void] (set-virtualenvproject)
         }
@@ -126,19 +127,21 @@ $TestCase_SetVirtualEnvProject = {
             $_.exception.message -eq "Can't find virtualenv."
         }
 
-        -not (test-path "$env:WORKONHOME/XXX/.project")
+        -not (test-path "$env:WORKON_HOME/XXX/.project")
     }
 
     $test_CantFindProjectDirectory = {
-        $env:VIRTUAL_ENV = "$env:WORKONHOME/FOO"
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/FOO"
         try {
-            [void] (set-virtualenvproject -project "$newProjectsHome/XXX")
+            [void] (set-virtualenvproject -project "$env:WORKON_HOME/XXX")
+            $false
         }
         catch {
             $_.exception.message -eq "Can't find project directory."
+            $true
         }
 
-        -not (test-path "$env:WORKONHOME/FOO/.project")
+        -not (test-path "$env:WORKON_HOME/FOO/.project")
     }
 
     makeTestCase
@@ -147,49 +150,53 @@ $TestCase_SetVirtualEnvProject = {
 $TestCase_SetLocationToProeject = {
     $setUpTestCase = {
         param($Logic)
-        # make workon home
-        $newWorkonHome = "$env:TEMP/PowerTestTests/WORKONHOME"
-        $newProjectsHome = "$env:TEMP/PowerTestTests/PROJECTS"
-        [void] (new-item -itemtype "d" -path $newWorkonHome -force)
+
+        $fakeWorkonHome = _MakeFakeWorkonHome "PowerTestTests"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "FOO"
+        $newProjectsHome = "$fakeWorkonHome/PROJECTS"
         [void] (new-item -itemtype "d" -path $newProjectsHome -force)
-        [void] (new-item -itemtype "d" -path "$newWorkonHome/FOO" -force)
         [void] (new-item -itemtype "d" -path "$newProjectsHome/BAR" -force)
 
-        [void] (new-item -itemtype "f" -path "$newWorkonHome/FOO/.project" -force)
-        "$newProjectsHome/BAR" | out-file -filepath "$newWorkonHome/FOO/.project" -encoding "utf8"
+        [void] (new-item -itemtype "f" -path "$fakeWorkonHome/FOO/.project" -force)
+        "$newProjectsHome/BAR" | out-file -filepath "$fakeWorkonHome/FOO/.project" -encoding "utf8"
 
         # redefine these two function so they are accessible in this scope without
         # loading virtualenvwrapper-powershell.
         function VerifyWorkonHome { $true }
         function VerifyVirtualEnv { $true }
 
-        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
-        $ProjectHome = "$newProjectsHome"
+
+        $ProjectHome = $newProjectsHome
+        $env:WORKON_HOME = $fakeWorkonHome
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/FOO"
 
         & $Logic
 
-        remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
+        remove-item -path $fakeWorkonHome -recurse
     }
 
     $test_ProjectFileDoesNotExist = {
-        [void] (remove-item "$newWorkonHome/FOO/.project")
+        [void] (remove-item "$env:WORKON_HOME/FOO/.project")
         try{
             Set-LocationToProject
+            $false
         }
         catch {
             $_.exception.message -eq "No project set in $env:VIRTUAL_ENV/.project"
+            $true
         }
     }
 
     $test_ProjectDirectoryDoesNotExist = {
         $projDir = "xzy:"
-        [void] (set-content -path "$newWorkonHome/FOO/.project" -value $projDir -encoding "utf8")
+        [void] (set-content -path "$env:WORKON_HOME/FOO/.project" -value $projDir -encoding "utf8")
         try{
             [void] (Set-LocationToProject)
             $false
         }
         catch {
             $_.exception.message -eq "Project directory $projDir does not exist."
+            $true
         }
     }
 
@@ -197,7 +204,7 @@ $TestCase_SetLocationToProeject = {
         $cwd = get-location
         try {
             [void] (Set-LocationToProject)
-            (get-item "$newProjectsHome/BAR").path -eq (get-item (get-location)).path
+            (get-item "$ProjectHome/BAR").path -eq (get-item (get-location)).path
         }
         finally {
             [void] (set-location $cwd)
@@ -213,28 +220,28 @@ $TestCase_NewVirtualEnvProject = {
 
         $oldLocation = get-location
 
-        # make workon home
-        $newWorkonHome = "$env:TEMP/PowerTestTests/WORKONHOME"
-        $newProjectsHome = "$env:TEMP/PowerTestTests/PROJECTS"
-        [void] (new-item -itemtype "d" -path $newWorkonHome -force)
+        $fakeWorkonHome = _MakeFakeWorkonHome "PowerTestTests"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "FOO"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "BAR"
+        $newProjectsHome = "$fakeWorkonHome/PROJECTS"
         [void] (new-item -itemtype "d" -path $newProjectsHome -force)
-        [void] (new-item -itemtype "d" -path "$newWorkonHome/FOO" -force)
         [void] (new-item -itemtype "d" -path "$newProjectsHome/BAR" -force)
 
-        [void] (new-item -itemtype "f" -path "$newWorkonHome/FOO/.project" -force)
-        "$newProjectsHome/BAR" | out-file -filepath "$newWorkonHome/FOO/.project" -encoding "utf8"
+        [void] (new-item -itemtype "f" -path "$fakeWorkonHome/FOO/.project" -force)
+        "$newProjectsHome/BAR" | out-file -filepath "$fakeWorkonHome/FOO/.project" -encoding "utf8"
 
         # redefine these two function so they are accessible in this scope without
         # loading virtualenvwrapper-powershell.
         function New-VirtualEnvironment { $true }
 
-        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
-        $ProjectHome = "$newProjectsHome"
+        $ProjectHome = $newProjectsHome
+        $env:WORKON_HOME = $fakeWorkonHome
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/FOO"
 
         & $Logic
 
         set-location $oldLocation
-        remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
+        remove-item -path $fakeWorkonHome -recurse
     }
 
     $test_StopIfProjectHomeIsNotCorrectlySet = {
@@ -288,8 +295,8 @@ $TestCase_NewVirtualEnvProject = {
 
     $test_CanCreateNewProject = {
         # fake a new virtual environment
-        $env:VIRTUAL_ENV = "$newWorkonHome/NEWPROJECT"
-        [void] (new-item -itemtype "d" "$newWorkonHome/NEWPROJECT")
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/NEWPROJECT"
+        [void] (new-item -itemtype "d" "$env:WORKON_HOME/NEWPROJECT")
 
         [void] (new-virtualenvproject -envname "NEWPROJECT")
 
@@ -319,21 +326,30 @@ $TestCase_ProjectEventsTriggering = {
                                              '-File', "`"$Script`""
         }
 
-        # make workon home
-        $newWorkonHome = "$env:TEMP/PowerTestTests/WORKONHOME"
-        $newProjectsHome = "$env:TEMP/PowerTestTests/PROJECTS"
-        [void] (new-item -itemtype "d" -path $newWorkonHome -force)
+        $oldLocation = get-location
+
+        $fakeWorkonHome = _MakeFakeWorkonHome "PowerTestTests"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "FOO"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "BAR"
+        $newProjectsHome = "$fakeWorkonHome/PROJECTS"
         [void] (new-item -itemtype "d" -path $newProjectsHome -force)
-        [void] (new-item -itemtype "d" -path "$newWorkonHome/FOO" -force)
         [void] (new-item -itemtype "d" -path "$newProjectsHome/BAR" -force)
 
-        $env:WORKON_HOME = $newWorkonHome
-        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
-        $ProjectHome = "$newProjectsHome"
+        [void] (new-item -itemtype "f" -path "$fakeWorkonHome/FOO/.project" -force)
+        "$newProjectsHome/BAR" | out-file -filepath "$fakeWorkonHome/FOO/.project" -encoding "utf8"
+
+        # redefine these two function so they are accessible in this scope without
+        # loading virtualenvwrapper-powershell.
+        function New-VirtualEnvironment { $true }
+
+        $ProjectHome = $newProjectsHome
+        $env:WORKON_HOME = $fakeWorkonHome
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/FOO"
 
         & $Logic
 
-        remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
+        set-location $oldLocation
+        remove-item -path $fakeWorkonHome -recurse
         remove-item function:VEW_RunInSubProcess
     }
 
@@ -366,25 +382,28 @@ $TestCase_Templates = {
 
         $oldLocation = get-location
 
-        # make workon home
-        $newWorkonHome = "$env:TEMP/PowerTestTests/WORKONHOME"
-        $newProjectsHome = "$env:TEMP/PowerTestTests/PROJECTS"
-        [void] (new-item -itemtype "d" -path $newWorkonHome -force)
+        $fakeWorkonHome = _MakeFakeWorkonHome "PowerTestTests"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "FOO"
+        _MakeFakeVirtualEnvironment -WorkonHome $fakeWorkonHome -Name "BAR"
+        $newProjectsHome = "$fakeWorkonHome/PROJECTS"
         [void] (new-item -itemtype "d" -path $newProjectsHome -force)
-        [void] (new-item -itemtype "d" -path "$newWorkonHome/FOO" -force)
         [void] (new-item -itemtype "d" -path "$newProjectsHome/BAR" -force)
+
+        [void] (new-item -itemtype "f" -path "$fakeWorkonHome/FOO/.project" -force)
+        "$newProjectsHome/BAR" | out-file -filepath "$fakeWorkonHome/FOO/.project" -encoding "utf8"
 
         # redefine these two function so they are accessible in this scope without
         # loading virtualenvwrapper-powershell.
         function New-VirtualEnvironment { $true }
 
-        $env:VIRTUAL_ENV = "$newWorkonHome/FOO"
-        $ProjectHome = "$newProjectsHome"
+        $ProjectHome = $newProjectsHome
+        $env:WORKON_HOME = $fakeWorkonHome
+        $env:VIRTUAL_ENV = "$env:WORKON_HOME/FOO"
 
         & $Logic
 
         set-location $oldLocation
-        remove-item -path "$env:TEMP/PowerTestTests" -recurse -force
+        remove-item -path $fakeWorkonHome -recurse
     }
 
     $test_NonExistantTemplatesSource = {
@@ -398,7 +417,7 @@ $TestCase_Templates = {
     }
 
     $test_NonExistantTemplate = {
-        $VirtualenvWrapperTemplates = "$newWorkonHome"
+        $VirtualenvWrapperTemplates = $env:WORKON_HOME
         [void] (mkproject -envname "xxx" -templates "foo") 2> $null
 
          # this is a non-terminating error, so we can't try/catch it.
@@ -406,13 +425,13 @@ $TestCase_Templates = {
     }
 
     $test_Template = {
-        $VirtualenvWrapperTemplates = "$newWorkonHome"
+        $VirtualenvWrapperTemplates = $env:WORKON_HOME
         [void] (set-content -path "$VirtualenvWrapperTemplates/Project.Template.Foo.ps1" `
-                    -value "[void] (new-item -itemtype 'f' -path '$newWorkonHome/foo.xxx')" `
+                    -value "[void] (new-item -itemtype 'f' -path '$env:WORKON_HOME/foo.xxx')" `
                     -encoding "utf8")
         [void] (mkproject -envname "xxx" -templates "foo")
 
-        (test-path "$newWorkonHome/foo.xxx")
+        (test-path "$env:WORKON_HOME/foo.xxx")
     }
 
     makeTestCase
