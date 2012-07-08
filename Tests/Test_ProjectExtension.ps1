@@ -197,7 +197,7 @@ $TestCase_SetLocationToProeject = {
         [void] (set-content -path "$newWorkonHome/FOO/.project" -value $projDir -encoding "utf8")
         try{
             [void] (Set-LocationToProject)
-            set-psdebug -Step
+            $false
         }
         catch {
             $_.exception.message -eq "Project directory $projDir does not exist."

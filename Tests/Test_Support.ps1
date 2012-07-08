@@ -185,7 +185,7 @@ $TestCase_NewVirtualEnvData = {
         _MakeFakeVirtualEnvironment -Name "BAR" -WorkonHome $fakeWorkonHome
         $env:WORKON_HOME = $fakeWorkonHome
         remove-item "$fakeWorkonHome/BAR/Scripts/activate.ps1"
-        $target_3 = "$env:TEMP/VirtualenvWrapperTests/FOO/lib/site-packages"
+        $target_3 = "$fakeWorkonHome/FOO/lib/site-packages"
         [void] (new-item -itemtype "d" -path $target_3 -force)
 
         & $Logic
@@ -194,11 +194,11 @@ $TestCase_NewVirtualEnvData = {
     }
 
     $test_ProduceData = {
-        $data = NewVirtualEnvData "$env:TEMP/VirtualenvWrapperTests/FOO"
+        $data = NewVirtualEnvData "$env:WORKON_HOME/FOO"
 
         $data.name -eq "foo"
-        (resolve-path $data.pathtoscripts).providerpath -eq (get-item (join-path "$env:TEMP/VirtualenvWrapperTests/foo" "scripts")).fullname
-        (resolve-path $data.pathtositepackages).providerpath -eq (get-item (join-path "$env:TEMP/VirtualenvWrapperTests/foo" "lib/site-packages")).fullname
+        (resolve-path $data.pathtoscripts).providerpath -eq (get-item (join-path "$env:WORKON_HOME/foo" "scripts")).fullname
+        (resolve-path $data.pathtositepackages).providerpath -eq (get-item (join-path "$env:WORKON_HOME/foo" "lib/site-packages")).fullname
     }
 
     makeTestCase
@@ -217,7 +217,7 @@ $TestCase_Initialize = {
         Initialize
         & $Logic
 
-        remove-item $fakeWorkonHome
+        remove-item $fakeWorkonHome -recurse
     }
 
     $test_Initialize = {
